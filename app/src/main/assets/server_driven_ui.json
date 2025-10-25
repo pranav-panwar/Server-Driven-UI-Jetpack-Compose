@@ -1,0 +1,104 @@
+{
+  "uiData": [
+    {
+
+    "type": "Box",
+    "margin": {
+      "top": 10,
+      "bottom": 5,
+      "left": 0,
+      "right": 0
+    },
+    "style": {
+      "modifier": {
+        "clip": {
+          "shape": "CIRCLE_SHAPE",
+          "radius": 0
+        },
+        "backgroundColor": "RED",
+        "padding": {
+          "top": 34,
+          "bottom": 12,
+          "left": 12,
+          "right": 24
+        },
+        "onClick": {
+          "action": {
+            "perform": "show_toast",
+            "parameters": {
+              "text": "Hello how are otu",
+              "screen": "details"
+            }
+          }
+          }
+        }
+      }
+    ,
+    "children": [
+      {
+        "type": "text",
+        "content": [
+          {
+            "text": "Hello",
+            "imageUrl": "hee",
+            "url": "hello"
+          }
+        ],
+        "action": {
+          "perform": "show_toast",
+          "parameters": {
+            "text": "Hello how are otu",
+            "screen": "details"
+          }
+        },
+        "style": {
+          "columnStyle": {
+            "verticalArrangement": "Center",
+            "horizontalAlignment": "Start"
+          },
+          "rowStyle": {
+            "horizontalArrangement": "Start",
+            "verticalAlignment": "Center"
+          },
+          "modifier": {
+            "clip": {
+              "shape": "Circle",
+              "radius": 0
+            },
+            "backgroundColor": "Blue",
+            "padding": {
+              "top": 34,
+              "bottom": 12,
+              "left": 12,
+              "right": 24
+            },
+            "onClick": {
+              "action": {
+                "perform": "navigate"
+              },
+              "parameters": {
+                "screen": "details"
+              }
+            }
+          },
+          "textStyle": {
+            "fontSize": 12,
+            "textColor": "red",
+            "fontWeight": "bold"
+          }
+        },
+        "itemSize": {
+          "height": 30,
+          "width": 50
+        },
+        "margin": {
+          "top": 34,
+          "bottom": 12,
+          "left": 12,
+          "right": 24
+        }
+      }
+    ]
+    }
+  ]
+}
