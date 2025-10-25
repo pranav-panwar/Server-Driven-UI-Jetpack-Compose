@@ -631,12 +631,6 @@ Use data binding to show/hide elements based on data:
 
 ---
 
-## 📄 License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
----
-
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request or open an issue.
@@ -654,7 +648,6 @@ Contributions are welcome! Please feel free to submit a Pull Request or open an 
 For questions, issues, or suggestions:
 
 - Open an [issue](https://github.com/pranav-panwar/Server-Driven-UI-Jetpack-Compose/issues)
-- Start a [discussion](https://github.com/pranav-panwar/Server-Driven-UI-Jetpack-Compose/discussions)
 
 ---
 
