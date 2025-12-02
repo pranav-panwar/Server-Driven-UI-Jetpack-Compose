@@ -3,7 +3,6 @@ package com.praptechie.serverdrivenuicompose.ui_elements
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -25,15 +24,12 @@ internal fun RenderRow(
     onEvent: (ServerDrivenEvent) -> Unit
 ) {
     val modifier = if (component.itemSize != null) {
-        Modifier
-            .width(component.itemSize.width?.dp ?: 100.dp)
-            .height(component.itemSize.height?.dp ?: 100.dp)  // ← USE itemSize
+        component.itemSize.toModifier()
     } else {
         Modifier.fillMaxWidth()
     }
     Row(
         modifier = modifier
-
             .then(component.style?.modifier?.toModifier() ?: Modifier),
         horizontalArrangement = component.style?.rowStyle?.horizontalArrangement.toHorizontalArrangement(),
         verticalAlignment = component.style?.rowStyle?.verticalAlignment.toVerticalAlignment()

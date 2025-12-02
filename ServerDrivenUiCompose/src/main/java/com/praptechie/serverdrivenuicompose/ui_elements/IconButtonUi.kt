@@ -1,7 +1,6 @@
 package com.praptechie.serverdrivenuicompose.ui_elements
 
-import android.util.Log
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -12,7 +11,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import com.praptechie.serverdrivenuicompose.data_models.IconButtonComponent
 import com.praptechie.serverdrivenuicompose.data_models.ServerDrivenEvent
 import com.praptechie.serverdrivenuicompose.handler_processors.IconResolver
@@ -23,7 +21,6 @@ import com.praptechie.serverdrivenuicompose.ui_elements_handler_styles.toModifie
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
-import kotlin.collections.plus
 
 @Composable
 internal fun RenderIconButton(
@@ -36,7 +33,11 @@ internal fun RenderIconButton(
     val style = component.style?.iconButtonStyle
 
     var isToggled by remember { mutableStateOf(false) }
-
+    val modifier = if (component.itemSize != null) {
+        component.itemSize.toModifier()
+    } else {
+        Modifier.fillMaxWidth()
+    }
     // Handle data changes dynamically
     LaunchedEffect(dataJson, state.stateMap) {
         isToggled = when {
@@ -46,7 +47,6 @@ internal fun RenderIconButton(
             style?.toggleStateFrom != null -> {
                 val path = style.toggleStateFrom.removePrefix("@")
                 val resolved = TemplateProcessor.resolveValue(path, dataJson)
-                Log.e("asdfasda","path = $path, res = $resolved")
                 (resolved as? JsonPrimitive)?.booleanOrNull ?: false
             }
             else -> false
@@ -88,15 +88,14 @@ internal fun RenderIconButton(
 
             onEvent(ServerDrivenEvent.StateUpdateRequested(component.stateKey ?: "", isToggled.toString()))
         },
-        modifier = Modifier
-            .then(Modifier.size((component.size?:0).dp))
+        modifier = modifier
             .then(component.style?.modifier?.toModifier() ?: Modifier)
     ) {
         Icon(
             imageVector = icon,
             contentDescription = iconName,
             tint = iconColor,
-            modifier = Modifier.size(component.size.dp)
+            modifier = modifier
         )
     }
 }
