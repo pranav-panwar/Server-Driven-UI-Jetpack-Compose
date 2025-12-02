@@ -1,14 +1,20 @@
 package com.praptechie.serverdrivenuicompose.ui_elements
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.praptechie.serverdrivenuicompose.data_models.LazyColumnComponent
 import com.praptechie.serverdrivenuicompose.data_models.ServerDrivenEvent
 import com.praptechie.serverdrivenuicompose.handler_processors.ServerDrivenState
 import com.praptechie.serverdrivenuicompose.handler_processors.TemplateProcessor
+import com.praptechie.serverdrivenuicompose.ui_elements_handler_styles.toHorizontalAlignment
+import com.praptechie.serverdrivenuicompose.ui_elements_handler_styles.toModifier
+import com.praptechie.serverdrivenuicompose.ui_elements_handler_styles.toVerticalAlignment
+import com.praptechie.serverdrivenuicompose.ui_elements_handler_styles.toVerticalArrangement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
@@ -27,9 +33,15 @@ internal fun RenderLazyColumn(
         dataJson,
         state.stateMap
     )
-
+    val modifier = if (component.itemSize != null) {
+        component.itemSize.toModifier()
+    } else {
+        Modifier.fillMaxWidth()
+    }
     LazyColumn(
-        verticalArrangement = Arrangement.spacedBy((component.spacing?:8).dp)
+        modifier = modifier.then(component.style?.modifier.toModifier()),
+        verticalArrangement = if(((component.spacing?:0)>0))Arrangement.spacedBy(space=(component.spacing?:8).dp, alignment = component.style?.columnStyle?.verticalArrangement.toVerticalAlignment()) else component.style?.columnStyle?.verticalArrangement.toVerticalArrangement(),
+        horizontalAlignment = component.style?.columnStyle?.horizontalAlignment.toHorizontalAlignment()
     ) {
         itemsIndexed(items) { index, item ->
             val itemContext = buildJsonObject {

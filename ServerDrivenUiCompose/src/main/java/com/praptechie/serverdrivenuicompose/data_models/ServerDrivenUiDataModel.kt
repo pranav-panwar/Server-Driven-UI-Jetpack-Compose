@@ -13,7 +13,6 @@ internal data class UIDefinition(
 @Serializable
 internal sealed class UIComponent {
     abstract val type: String?
-    abstract val margin: Margin? // ← ADD THIS from old
     abstract val style: ComponentStyle?
 }
 
@@ -21,8 +20,9 @@ internal sealed class UIComponent {
 @SerialName("column")
 internal data class ColumnComponent(
     override val type: String? = "column",
-    override val margin: Margin? = null,  // ← ADD THIS
     override val style: ComponentStyle? = null,
+    val itemSize: ItemSize?=null,
+    val spacing: Int ?= 8,
     val children: List<UIComponent>? = emptyList()
 ) : UIComponent()
 
@@ -30,7 +30,6 @@ internal data class ColumnComponent(
 @SerialName("row")
 internal data class RowComponent(
     override val type: String = "row",
-    override val margin: Margin? = null,  // ← ADD THIS
     override val style: ComponentStyle? = null,
     val itemSize: ItemSize?=null,
     val children: List<UIComponent> = emptyList()
@@ -40,7 +39,7 @@ internal data class RowComponent(
 @SerialName("text")
 internal data class TextComponent(
     override val type: String = "text",
-    override val margin: Margin? = null,  // ← ADD THIS
+    val itemSize: ItemSize?=null,
     val dataBinding: String? = null,
     val content: List<TextContent> = emptyList(),
     override val style: ComponentStyle? = null,
@@ -59,7 +58,6 @@ internal data class TextContent(
 @SerialName("image")
 internal data class ImageComponent(
     override val type: String = "image",
-    override val margin: Margin? = null,  // ← ADD THIS
     val dataBinding: String? = null,
     val imageUrl: String? = null,
     override val style: ComponentStyle? = null,
@@ -72,7 +70,6 @@ internal data class ImageComponent(
 @SerialName("lazy_vertical_staggered_grid")
 internal data class LazyVerticalStaggeredGridComponent(
     override val type: String = "lazy_vertical_staggered_grid",
-    override val margin: Margin? = null,  // ← ADD THIS
     val dataBinding: String? = null,
     val imageUrl: String? = null,
     val columns:Int?=2,
@@ -88,7 +85,6 @@ internal data class LazyVerticalStaggeredGridComponent(
 @SerialName("button")
 internal data class ButtonComponent(
     override val type: String = "button",
-    override val margin: Margin? = null,  // ← ADD THIS
     val text: String,
     val dataBinding: String? = null,
     override val style: ComponentStyle? = null,
@@ -100,9 +96,9 @@ internal data class ButtonComponent(
 @SerialName("card")
 internal data class CardComponent(
     override val type: String = "card",
-    override val margin: Margin? = null,  // ← ADD THIS
     override val style: ComponentStyle? = null,
     val children: List<UIComponent> = emptyList(),
+    val itemSize: ItemSize?=null,
     val action: Action? = null
 ) : UIComponent()
 
@@ -110,11 +106,11 @@ internal data class CardComponent(
 @SerialName("chip_group")
 internal data class ChipGroupComponent(
     override val type: String = "chip_group",
-    override val margin: Margin? = null,  // ← ADD THIS
     val dataBinding: String,
     val selectedStateKey: String = "selectedIndex",
     val chipTemplate: ChipTemplate,
     override val style: ComponentStyle? = null,  // ← REORDER
+    val itemSize: ItemSize?=null,
     val scrollable: Boolean = true
 ) : UIComponent()
 
@@ -122,10 +118,9 @@ internal data class ChipGroupComponent(
 @SerialName("icon_button")
 internal data class IconButtonComponent(
     override val type: String = "icon_button",
-    override val margin: Margin? = null,  // ← ADD THIS
     override val style: ComponentStyle? = null,
+    val itemSize: ItemSize?=null,
     val stateKey: String? = null,             // Key to check toggle state (e.g., "isLiked")
-    val size: Int = 24,
     val action: Action? = null
 ) : UIComponent()
 
@@ -140,7 +135,7 @@ internal data class ChipTemplate(
 @SerialName("grid")
 internal data class GridComponent(
     override val type: String = "grid",
-    override val margin: Margin? = null,  // ← ADD THIS
+    val itemSize: ItemSize?=null,
     val columns: Int?= 2,
     val spacing: Int?= 8,
     val dataBinding: String,
@@ -152,10 +147,10 @@ internal data class GridComponent(
 @SerialName("lazy_column")
 internal data class LazyColumnComponent(
     override val type: String = "lazy_column",
-    override val margin: Margin? = null,  // ← ADD THIS
     val spacing: Int ?= 8,
     val dataBinding: String,
     override val style: ComponentStyle? = null,  // ← REORDER
+    val itemSize: ItemSize?=null,
     val itemTemplate: UIComponent
 ) : UIComponent()
 
@@ -170,6 +165,7 @@ internal data class ComponentStyle(
     val rowStyle: RowStyle? = null,
     val cardStyle: CardStyle? = null,
     val iconButtonStyle: IconButtonStyle? = null,
+    val buttonStyle: ButtonStyle? = null,
     val boxContentAlignment: String? = null  // ← ADD THIS from old
 )
 
@@ -203,9 +199,9 @@ internal data class Padding(
 
 @Serializable
 internal data class TextStyle(
-    val fontSize: Int = 16,
-    val textColor: String = "#000000",
-    val fontWeight: String = "normal"
+    val fontSize: Int?= 16,
+    val textColor: String? = "#000000",
+    val fontWeight: String? = "normal"
 )
 
 @Serializable
@@ -223,7 +219,8 @@ internal data class ChipStyle(
 internal data class ColumnStyle(
     val verticalArrangement: String? = "top",
     val horizontalAlignment: String? = "start",
-    val spaceBy: Int? = 0
+    val spaceBy: Int? = 0,
+    val enableScroll: Boolean? = false
 )
 
 @Serializable
@@ -251,6 +248,15 @@ internal data class IconButtonStyle(
 )
 
 @Serializable
+internal data class ButtonStyle(
+    val buttonColor: String?="#ffffff",
+    val buttonShape:String?="DEFAULT",
+    val buttonRounded:Int?=0,
+    val buttonTextColor:String?="#ffffff",
+    val buttonTextSize:Int?=12,
+)
+
+@Serializable
 internal data class Margin(
     val top: Int? = null,
     val left: Int? = null,
@@ -262,7 +268,9 @@ internal data class Margin(
 @Serializable
 internal data class ItemSize(
     val height: Int? = null,
-    val width: Int? = null
+    val width: Int? = null,
+    val widthPercent:Float?=null,
+    val heightPercent:Float?=null
 )
 
 // ============ Actions ============

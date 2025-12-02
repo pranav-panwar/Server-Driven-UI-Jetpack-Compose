@@ -1,6 +1,5 @@
 package com.praptechie.serverdrivenuicompose.ui_elements
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -27,7 +26,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.intOrNull
-import kotlin.collections.plus
 
 @Composable
 internal fun RenderChipGroup(
@@ -41,8 +39,6 @@ internal fun RenderChipGroup(
         dataJson,
         state.stateMap
     )
-
-    Log.e("asdfasdfasdf", "ChipGroup items: $items")
 
     val selectedIndex by remember {
         derivedStateOf {
@@ -67,8 +63,6 @@ internal fun RenderChipGroup(
                 itemContext,  // ← Pass itemContext, not item
                 state.stateMap
             )
-
-            Log.e("asdfasdfasdf", "uidata - $item, label = $label")
 
             val style = component.chipTemplate.style ?: ChipStyle()
             val isSelected = index == selectedIndex

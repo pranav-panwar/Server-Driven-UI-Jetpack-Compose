@@ -3,6 +3,8 @@ package com.praptechie.serverdrivenuicompose.ui_elements_handler_styles
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -78,7 +80,7 @@ import kotlinx.serialization.json.JsonObject
         try {
             modifier = modifier.background(Color(android.graphics.Color.parseColor(it)))
         } catch (e: Exception) {
-            Log.e("ModifierStyle", "Invalid color: $it")
+            Log.e("ServerDrivenUILogTag", "ModifierStyle Exception - Invalid color: $it")
         }
     }
 
@@ -109,18 +111,28 @@ internal fun Margin?.toModifier(): Modifier {
 
 internal fun ItemSize?.toModifier(): Modifier {
     if (this == null) return Modifier
-    var modifier : Modifier= Modifier
-    this.width?.let { modifier = modifier.width(it.dp) }
-    this.height?.let { modifier = modifier.height(it.dp) }
+    var modifier: Modifier = Modifier
+
+    if (this.widthPercent != null && this.widthPercent > 0.0f) {
+        modifier = modifier.fillMaxWidth(this.widthPercent)
+    } else if (this.width != null) {
+        modifier = modifier.width(this.width.dp)
+    }
+
+    if (this.heightPercent != null && this.heightPercent > 0.0f) {
+        modifier = modifier.fillMaxHeight(this.heightPercent)
+    } else if (this.height != null) {
+        modifier = modifier.height(this.height.dp)
+    }
     return modifier
 }
 
 
 internal fun TextStyle.toTextStyle(): androidx.compose.ui.text.TextStyle {
     return androidx.compose.ui.text.TextStyle(
-        fontSize = fontSize.sp,
+        fontSize = (fontSize?:16).sp,
         color = Color(android.graphics.Color.parseColor(textColor)),
-        fontWeight = when (fontWeight.lowercase()) {
+        fontWeight = when (fontWeight?.lowercase()) {
             "bold" -> FontWeight.Bold
             "medium" -> FontWeight.Medium
             "light" -> FontWeight.Light
@@ -165,4 +177,12 @@ internal fun String?.toVerticalAlignment(): Alignment.Vertical {
         "bottom" -> Alignment.Bottom
         else -> Alignment.Top
     }
+}
+
+internal fun String?.convertToIntColor(): Int {
+    return android.graphics.Color.parseColor(this)
+}
+
+internal fun Int.convertToColor(): Color {
+    return Color(this)
 }

@@ -90,7 +90,7 @@ class ServerDrivenUiHandler {
                 }
             }
 
-            uiDefinition != null && dataJson != null -> {
+            uiDefinition != null && !dataJson.isNullOrEmpty() -> {
                 val state = remember(uiDefinition, dataJson) { ServerDrivenState() }
                 ServerDrivenContent(
                     uiDefinition = uiDefinition!!,
@@ -111,7 +111,7 @@ class ServerDrivenUiHandler {
         modifier: Modifier = Modifier,
         onEvent: (ServerDrivenEvent) -> Unit
     ) {
-        if (uiDefinition.uiData.isNotEmpty() && uiDefinition.uiData != null) {
+        if (!uiDefinition.uiData.isNullOrEmpty()) {
 
             Box(modifier = modifier.fillMaxSize()) {
                 uiDefinition?.uiData?.forEach { component ->

@@ -43,6 +43,7 @@ internal class ServerDrivenUIViewModel : ViewModel() {
 
             } catch (e: Exception) {
                 _error.value = "Failed to parse UI: ${e.message}"
+                Log.e(ServerDrivenUILogTag, "Failed to parse UI: ${e.message}")
             } finally {
                 _isLoading.value = false
             }

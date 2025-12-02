@@ -1,8 +1,10 @@
 package com.praptechie.serverdrivenuicompose.ui_elements
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -33,10 +35,13 @@ internal fun RenderCard(
             start = (it.left ?: it.all ?: 0).dp,
             end = (it.right ?: it.all ?: 0).dp)
     }?: PaddingValues(0.dp)
-
+    val modifier = if (component.itemSize != null) {
+        component.itemSize.toModifier()
+    } else {
+        Modifier.fillMaxWidth()
+    }
     Card(
-        modifier = Modifier
-            .then(component.margin?.toModifier() ?: Modifier)  // ← USE MARGIN
+        modifier = modifier
             .then(component.style?.modifier?.toModifier() ?: Modifier)
             .then(if (clickAction != null) {
                 Modifier.clickable {
@@ -48,7 +53,7 @@ internal fun RenderCard(
         } ?: RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(containerColor =Color( android.graphics.Color.parseColor(component?.style?.cardStyle?.cardContainerColor?:"#fff000")))
     ) {
-        Column(modifier = Modifier.padding(paddingValues)){
+        Column(modifier = Modifier.padding(paddingValues), verticalArrangement = Arrangement.spacedBy(10.dp)){
             component.children.forEach { child ->
                 RenderComponent(child, dataJson, state, onEvent)
             }

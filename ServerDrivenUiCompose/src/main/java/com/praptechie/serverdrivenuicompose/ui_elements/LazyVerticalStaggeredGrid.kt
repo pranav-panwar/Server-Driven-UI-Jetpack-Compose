@@ -1,7 +1,7 @@
 package com.praptechie.serverdrivenuicompose.ui_elements
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
@@ -12,6 +12,9 @@ import com.praptechie.serverdrivenuicompose.data_models.LazyVerticalStaggeredGri
 import com.praptechie.serverdrivenuicompose.data_models.ServerDrivenEvent
 import com.praptechie.serverdrivenuicompose.handler_processors.ServerDrivenState
 import com.praptechie.serverdrivenuicompose.handler_processors.TemplateProcessor
+import com.praptechie.serverdrivenuicompose.ui_elements_handler_styles.toHorizontalAlignment
+import com.praptechie.serverdrivenuicompose.ui_elements_handler_styles.toHorizontalArrangement
+import com.praptechie.serverdrivenuicompose.ui_elements_handler_styles.toModifier
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
@@ -32,11 +35,17 @@ internal fun RenderLazyVerticalStaggeredGrid(
         dataJson,
         state.stateMap
     )
+    val modifier = if (component.itemSize != null) {
+        component.itemSize.toModifier()
+    } else {
+        Modifier.fillMaxWidth()
+    }
     // Use your custom staggered grid composable
     LazyVerticalStaggeredGrid(
-        horizontalArrangement = Arrangement.spacedBy((component.horizontalSpacing?:0).dp),
+        horizontalArrangement = if(((component.horizontalSpacing?:0)>0))Arrangement.spacedBy(space=(component.horizontalSpacing?:8).dp, alignment = component.style?.columnStyle?.horizontalAlignment.toHorizontalAlignment()) else component.style?.columnStyle?.horizontalAlignment.toHorizontalArrangement(),
         verticalItemSpacing = (component.verticalSpacing?:0).dp,
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier
+            .then(component.style?.modifier?.toModifier() ?: Modifier),
         columns = StaggeredGridCells.Fixed(component.columns?:2),
         content = {
             itemsIndexed(items) { index, item ->
