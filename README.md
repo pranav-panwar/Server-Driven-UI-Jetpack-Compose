@@ -6,6 +6,10 @@ A flexible and robust SDK for building **dynamic, server-driven UIs in Jetpack C
 
 ---
 
+## 📦 UI Designer
+
+[SDUI Designer](https://sduidesigner.netlify.app/)
+
 ## 📦 Installation
 
 Add the following to your project using [JitPack](https://jitpack.io):
