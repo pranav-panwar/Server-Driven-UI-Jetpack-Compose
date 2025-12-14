@@ -34,7 +34,7 @@ In your app's `build.gradle` (or `build.gradle.kts`):
 
 ```gradle
 dependencies {
-    implementation 'com.github.pranav-panwar:Server-Driven-UI-Jetpack-Compose:1.0.0'
+    implementation 'com.github.pranav-panwar:Server-Driven-UI-Jetpack-Compose:1.1.1'
 }
 ```
 
@@ -55,7 +55,6 @@ fun MyScreen() {
       "uiData": [
         {
           "type": "column",
-          "margin": null,
           "style": {
             "modifier": { "padding": { "all": 16 } },
             "columnStyle": { "spaceBy": 8 }
@@ -63,7 +62,6 @@ fun MyScreen() {
           "children": [
             {
               "type": "text",
-              "margin": null,
               "content": [{ "text": "Welcome to Server-Driven UI!" }],
               "style": {
                 "textStyle": {
@@ -115,7 +113,6 @@ Every component has this general structure:
 ```json
 {
   "type": "column",           // Required: Component type
-  "margin": { /* ... */ },    // Optional: Margins around the component
   "style": { /* ... */ },     // Optional: Styling properties
   "children": [ /* ... */ ],  // Optional: Child components (for containers)
   "action": { /* ... */ }     // Optional: Interactions/actions
@@ -128,9 +125,8 @@ Every component has this general structure:
 
 | Type | Description | Usage |
 |------|-------------|-------|
-| **column** | Vertical layout container | Contains `children`, supports spacing |
-| **row** | Horizontal layout | Contains `children`, supports spacing |
-| **box** | Positioning container | Use for overlays, custom layouts |
+| **column** | Vertical layout container | Contains `children`, supports spacing, alignment |
+| **row** | Horizontal layout | Contains `children`, supports spacing, alignment |
 | **card** | Card-style container | Supports border radius, shadow, background color |
 | **text** | Display text | Use `content` array with text data |
 | **image** | Async image loading | Supports clipping, sizing |
@@ -162,17 +158,10 @@ Every component has this general structure:
 - `textColor`: String (hex color, e.g., `"#000000"`)
 - `fontWeight`: `"bold"`, `"normal"`, `"medium"`, etc.
 
-### Padding & Margins
+### Padding
 
 ```json
-{
-  "margin": {
-    "top": 8,
-    "bottom": 8,
-    "left": 8,
-    "right": 8,
-    "all": null  // Use "all" for uniform margin
-  },
+
   "style": {
     "modifier": {
       "padding": {
@@ -349,8 +338,6 @@ Use `{{item.fieldName}}` to reference data:
 - ❌ Don't store sensitive data (passwords, tokens) in the UI JSON
 - ❌ Don't nest components too deeply (may cause performance issues)
 - ❌ Don't use invalid color hex codes
-- ❌ Don't forget to include `margin: null` in your JSON (or other required nullable fields)
-
 ---
 
 ## 📋 Real-World Example: Photo Feed
@@ -365,7 +352,6 @@ Here's a complete example of a photo feed UI:
   "uiData": [
     {
       "type": "column",
-      "margin": null,
       "style": {
         "modifier": { "padding": { "all": 12 } },
         "columnStyle": { "spaceBy": 8 }
@@ -373,14 +359,12 @@ Here's a complete example of a photo feed UI:
       "children": [
         {
           "type": "lazy_vertical_staggered_grid",
-          "margin": null,
           "dataBinding": "@posts",
           "columns": 2,
           "verticalSpacing": 12,
           "horizontalSpacing": 12,
           "itemTemplate": {
             "type": "card",
-            "margin": null,
             "style": {
               "cardStyle": {
                 "cardShape": 12,
@@ -391,7 +375,6 @@ Here's a complete example of a photo feed UI:
             "children": [
               {
                 "type": "column",
-                "margin": null,
                 "style": {
                   "modifier": { "padding": { "all": 1 } },
                   "columnStyle": { "spaceBy": 6 }
@@ -399,7 +382,6 @@ Here's a complete example of a photo feed UI:
                 "children": [
                   {
                     "type": "image",
-                    "margin": null,
                     "imageUrl": "{{item.photoUrl}}",
                     "itemSize": { "width": 160, "height": 140 },
                     "style": {
@@ -410,7 +392,6 @@ Here's a complete example of a photo feed UI:
                   },
                   {
                     "type": "text",
-                    "margin": null,
                     "content": [{ "text": "{{item.displayName}}" }],
                     "style": {
                       "textStyle": {
@@ -422,7 +403,6 @@ Here's a complete example of a photo feed UI:
                   },
                   {
                     "type": "text",
-                    "margin": null,
                     "content": [{ "text": "{{item.description}}" }],
                     "style": {
                       "textStyle": {
@@ -434,7 +414,6 @@ Here's a complete example of a photo feed UI:
                   },
                   {
                     "type": "row",
-                    "margin": null,
                     "itemSize": { "width": 100, "height": 40 },
                     "style": {
                       "rowStyle": {
@@ -445,7 +424,6 @@ Here's a complete example of a photo feed UI:
                     "children": [
                       {
                         "type": "icon_button",
-                        "margin": null,
                         "size": 20,
                         "style": {
                           "iconButtonStyle": {
@@ -466,7 +444,6 @@ Here's a complete example of a photo feed UI:
                       },
                       {
                         "type": "text",
-                        "margin": null,
                         "content": [{ "text": "{{item.likesCount}}" }],
                         "style": {
                           "textStyle": {
