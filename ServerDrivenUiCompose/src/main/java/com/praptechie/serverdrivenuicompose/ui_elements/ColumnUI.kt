@@ -3,6 +3,7 @@ package com.praptechie.serverdrivenuicompose.ui_elements
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.rememberScrollState
@@ -30,7 +31,7 @@ internal fun RenderColumn(
     val modifier = if (component.itemSize != null) {
         component.itemSize.toModifier()
     } else {
-        Modifier.fillMaxWidth()
+        Modifier.fillMaxWidth().fillMaxHeight()
     }
 
 val scrollModifier = if(component.style?.columnStyle?.enableScroll!=true) Modifier else {
