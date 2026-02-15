@@ -1,8 +1,8 @@
 plugins {
     id("com.android.library")
     alias(libs.plugins.jetbrains.kotlin.android)
-    kotlin("plugin.serialization") version "2.2.21"
-    id("org.jetbrains.kotlin.plugin.compose") version "2.2.0"
+    kotlin("plugin.serialization") version "2.0.0"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.0.0"
     id("maven-publish")
 }
 
@@ -11,7 +11,7 @@ publishing {
         register<MavenPublication>("release") {
             groupId = "com.github.pranav-panwar"
             artifactId = "server-driven-ui"
-            version = "1.2.0"
+            version = "1.2.1"
             afterEvaluate {
                 from(components["release"])
             }
@@ -47,19 +47,17 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
 
     }
     buildFeatures {
         compose = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
-    }
+
 }
 
 dependencies {
