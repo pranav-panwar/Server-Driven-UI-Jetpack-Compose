@@ -23,7 +23,8 @@ internal data class ColumnComponent(
     override val style: ComponentStyle? = null,
     val itemSize: ItemSize?=null,
     val spacing: Int ?= 8,
-    val children: List<UIComponent>? = emptyList()
+    val children: List<UIComponent>? = emptyList(),
+    val action: Action? = null,
 ) : UIComponent()
 
 @Serializable
@@ -32,7 +33,7 @@ internal data class RowComponent(
     override val type: String = "row",
     override val style: ComponentStyle? = null,
     val itemSize: ItemSize?=null,
-    val children: List<UIComponent> = emptyList()
+    val children: List<UIComponent> = emptyList(),
 ) : UIComponent()
 
 @Serializable
@@ -43,7 +44,7 @@ internal data class TextComponent(
     val dataBinding: String? = null,
     val content: List<TextContent> = emptyList(),
     override val style: ComponentStyle? = null,
-    val action: Action? = null
+    val action: Action? = null,
 ) : UIComponent()
 
 @Serializable
@@ -154,6 +155,39 @@ internal data class LazyColumnComponent(
     val itemTemplate: UIComponent
 ) : UIComponent()
 
+@Serializable
+@SerialName("box")
+internal data class BoxComponent(
+    override val type: String = "box",
+    override val style: ComponentStyle? = null,  // ← REORDER
+    val itemSize: ItemSize?=null,
+    val itemTemplate: UIComponent,
+    val action: Action? = null,
+) : UIComponent()
+
+@Serializable
+@SerialName("lazy_row")
+internal data class LazyRowComponent(
+    override val type: String = "lazy_row",
+    val spacing: Int ?= 8,
+    val dataBinding: String,
+    override val style: ComponentStyle? = null,  // ← REORDER
+    val itemSize: ItemSize?=null,
+    val itemTemplate: UIComponent,
+) : UIComponent()
+
+@Serializable
+@SerialName("bottom_bar")
+internal data class BottomBarComponent(
+    override val type: String?="bottom_bar",
+    override val style: ComponentStyle?,
+    val itemSize: ItemSize?=null,
+    val bottomBarItems:List<BottomBarItems>?=null
+): UIComponent()
+
+@Serializable
+internal data class BottomBarItems(val iconName:String?=null,val text:String?=null,val action: Action? = null)
+
 // ============ Enhanced Styles ============
 
 @Serializable
@@ -165,6 +199,7 @@ internal data class ComponentStyle(
     val rowStyle: RowStyle? = null,
     val cardStyle: CardStyle? = null,
     val iconButtonStyle: IconButtonStyle? = null,
+    val bottomBarStyle: BottomBarStyle? = null,
     val buttonStyle: ButtonStyle? = null,
     val boxContentAlignment: String? = null  // ← ADD THIS from old
 )
@@ -257,6 +292,12 @@ internal data class ButtonStyle(
 )
 
 @Serializable
+internal data class BottomBarStyle(
+    val iconColor: String? = "#ffffff",
+    val textColor: String? = "#ffffff",
+)
+
+@Serializable
 internal data class Margin(
     val top: Int? = null,
     val left: Int? = null,
@@ -270,7 +311,8 @@ internal data class ItemSize(
     val height: Int? = null,
     val width: Int? = null,
     val widthPercent:Float?=null,
-    val heightPercent:Float?=null
+    val heightPercent:Float?=null,
+    val weight:Float?=null
 )
 
 // ============ Actions ============
