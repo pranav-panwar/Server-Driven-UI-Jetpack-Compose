@@ -11,7 +11,7 @@ publishing {
         register<MavenPublication>("release") {
             groupId = "com.github.pranav-panwar"
             artifactId = "server-driven-ui"
-            version = "1.1.1"
+            version = "1.2.0"
             afterEvaluate {
                 from(components["release"])
             }

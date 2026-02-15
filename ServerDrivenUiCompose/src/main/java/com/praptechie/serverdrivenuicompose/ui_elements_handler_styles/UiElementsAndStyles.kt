@@ -179,6 +179,21 @@ internal fun String?.toVerticalAlignment(): Alignment.Vertical {
     }
 }
 
+internal fun String?.boxContentAlignment():Alignment{
+    return when (this?.lowercase()){
+        "center" -> Alignment.Center
+        "top_end" -> Alignment.TopEnd
+        "top_center" -> Alignment.TopCenter
+        "top_start" -> Alignment.TopStart
+        "center_end" -> Alignment.CenterEnd
+        "center_start" -> Alignment.CenterStart
+        "bottom_center" -> Alignment.BottomCenter
+        "bottom_end" -> Alignment.BottomEnd
+        "bottom_start" -> Alignment.BottomStart
+        else -> Alignment.TopCenter
+    }
+}
+
 internal fun String?.convertToIntColor(): Int {
     return android.graphics.Color.parseColor(this)
 }

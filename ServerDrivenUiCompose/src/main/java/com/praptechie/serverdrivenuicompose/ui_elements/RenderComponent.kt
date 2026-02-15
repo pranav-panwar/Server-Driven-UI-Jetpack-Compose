@@ -1,6 +1,8 @@
 package com.praptechie.serverdrivenuicompose.ui_elements
 
 import androidx.compose.runtime.Composable
+import com.praptechie.serverdrivenuicompose.data_models.BottomBarComponent
+import com.praptechie.serverdrivenuicompose.data_models.BoxComponent
 import com.praptechie.serverdrivenuicompose.data_models.ButtonComponent
 import com.praptechie.serverdrivenuicompose.data_models.CardComponent
 import com.praptechie.serverdrivenuicompose.data_models.ChipGroupComponent
@@ -9,6 +11,7 @@ import com.praptechie.serverdrivenuicompose.data_models.GridComponent
 import com.praptechie.serverdrivenuicompose.data_models.IconButtonComponent
 import com.praptechie.serverdrivenuicompose.data_models.ImageComponent
 import com.praptechie.serverdrivenuicompose.data_models.LazyColumnComponent
+import com.praptechie.serverdrivenuicompose.data_models.LazyRowComponent
 import com.praptechie.serverdrivenuicompose.data_models.LazyVerticalStaggeredGridComponent
 import com.praptechie.serverdrivenuicompose.data_models.RowComponent
 import com.praptechie.serverdrivenuicompose.data_models.ServerDrivenEvent
@@ -36,5 +39,8 @@ import kotlinx.serialization.json.JsonObject
         is LazyColumnComponent -> RenderLazyColumn(component, dataJson, state, onEvent)
         is IconButtonComponent -> RenderIconButton(component, dataJson, state, onEvent )
         is LazyVerticalStaggeredGridComponent -> RenderLazyVerticalStaggeredGrid(component, dataJson, state, onEvent)
+        is BoxComponent -> RenderBox(component, dataJson, state, onEvent)
+        is LazyRowComponent -> RenderLazyRow(component, dataJson, state, onEvent)
+        is BottomBarComponent -> RenderBottomBarUi(component, dataJson, state, onEvent)
     }
 }

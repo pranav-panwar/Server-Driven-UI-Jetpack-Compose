@@ -1,11 +1,11 @@
 package com.praptechie.serverdrivenuicompose.ui_elements
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import com.praptechie.serverdrivenuicompose.data_models.ColumnComponent
 import com.praptechie.serverdrivenuicompose.data_models.ServerDrivenEvent
 import com.praptechie.serverdrivenuicompose.handler_processors.ServerDrivenState
+import com.praptechie.serverdrivenuicompose.ui_elements_handler_styles.handleAction
 import com.praptechie.serverdrivenuicompose.ui_elements_handler_styles.toHorizontalAlignment
 import com.praptechie.serverdrivenuicompose.ui_elements_handler_styles.toModifier
 import com.praptechie.serverdrivenuicompose.ui_elements_handler_styles.toVerticalAlignment
@@ -31,7 +32,7 @@ internal fun RenderColumn(
     val modifier = if (component.itemSize != null) {
         component.itemSize.toModifier()
     } else {
-        Modifier.fillMaxWidth().fillMaxHeight()
+        Modifier.wrapContentWidth()
     }
 
 val scrollModifier = if(component.style?.columnStyle?.enableScroll!=true) Modifier else {
@@ -41,7 +42,12 @@ val scrollModifier = if(component.style?.columnStyle?.enableScroll!=true) Modifi
     Column(
         modifier = modifier
             .then(component.style?.modifier?.toModifier() ?: Modifier)
-            .then(scrollModifier),
+            .then(scrollModifier)
+            .then(if (component.action != null) {
+                Modifier.clickable {
+                    handleAction(component.action, onEvent, dataJson, state)
+                }
+            } else Modifier),
         verticalArrangement = if(((component.spacing?:0)>0))Arrangement.spacedBy(space=(component.spacing?:8).dp, alignment = component.style?.columnStyle?.verticalArrangement.toVerticalAlignment()) else component.style?.columnStyle?.verticalArrangement.toVerticalArrangement(),
         horizontalAlignment = component.style?.columnStyle?.horizontalAlignment.toHorizontalAlignment()
     ) {

@@ -2,7 +2,7 @@ package com.praptechie.serverdrivenuicompose.ui_elements
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,7 +29,7 @@ internal fun RenderText(
     val modifier = if (component.itemSize != null) {
         component.itemSize.toModifier()
     } else {
-        Modifier.fillMaxWidth()
+        Modifier.wrapContentWidth()
     }
     val text = when {
         component.dataBinding != null -> {
