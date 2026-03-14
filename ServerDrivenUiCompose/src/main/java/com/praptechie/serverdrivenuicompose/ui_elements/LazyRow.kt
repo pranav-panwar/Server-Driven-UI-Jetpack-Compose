@@ -27,8 +27,10 @@ internal fun RenderLazyRow(
     state: ServerDrivenState,
     onEvent: (ServerDrivenEvent) -> Unit
 ) {
+    if(component.dataBinding==null || component.itemTemplate==null)
+        return
     val items = TemplateProcessor.resolveDataSource(
-        component.dataBinding.removePrefix("@"),
+        component.dataBinding.removePrefix("@")!!,
         dataJson,
         state.stateMap
     )

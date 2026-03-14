@@ -90,7 +90,7 @@ internal data class ButtonComponent(
     val dataBinding: String? = null,
     override val style: ComponentStyle? = null,
     val itemSize: ItemSize? = null,  // ← ADD THIS from old
-    val action: Action
+    val action: Action?=null
 ) : UIComponent()
 
 @Serializable
@@ -161,7 +161,7 @@ internal data class BoxComponent(
     override val type: String = "box",
     override val style: ComponentStyle? = null,  // ← REORDER
     val itemSize: ItemSize?=null,
-    val itemTemplate: UIComponent,
+    val itemTemplate: UIComponent?=null,
     val action: Action? = null,
 ) : UIComponent()
 
@@ -170,10 +170,10 @@ internal data class BoxComponent(
 internal data class LazyRowComponent(
     override val type: String = "lazy_row",
     val spacing: Int ?= 8,
-    val dataBinding: String,
+    val dataBinding: String?=null,
     override val style: ComponentStyle? = null,  // ← REORDER
     val itemSize: ItemSize?=null,
-    val itemTemplate: UIComponent,
+    val itemTemplate: UIComponent?=null,
 ) : UIComponent()
 
 @Serializable

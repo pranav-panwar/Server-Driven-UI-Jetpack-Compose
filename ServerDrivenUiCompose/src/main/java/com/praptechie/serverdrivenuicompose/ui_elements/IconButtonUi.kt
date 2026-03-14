@@ -1,6 +1,6 @@
 package com.praptechie.serverdrivenuicompose.ui_elements
 
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -36,7 +36,7 @@ internal fun RenderIconButton(
     val modifier = if (component.itemSize != null) {
         component.itemSize.toModifier()
     } else {
-        Modifier.fillMaxWidth()
+        Modifier.wrapContentSize()
     }
     // Handle data changes dynamically
     LaunchedEffect(dataJson, state.stateMap) {

@@ -1,5 +1,6 @@
 package com.praptechie.serverdrivenuicompose.ui_elements
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import com.praptechie.serverdrivenuicompose.data_models.ServerDrivenEvent
 import com.praptechie.serverdrivenuicompose.handler_processors.ServerDrivenState
 import com.praptechie.serverdrivenuicompose.ui_elements_handler_styles.handleAction
 import com.praptechie.serverdrivenuicompose.ui_elements_handler_styles.toModifier
+import com.praptechie.serverdrivenuicompose.view_model.ServerDrivenUILogTag
 import kotlinx.serialization.json.JsonObject
 
 @Composable
@@ -28,6 +30,7 @@ internal fun RenderCard(
     state: ServerDrivenState,
     onEvent: (ServerDrivenEvent) -> Unit
 ) {
+
     val clickAction = component.style?.modifier?.onClick?.action ?: component.action
     val paddingValues = component.style?.cardStyle?.cardPadding?.let{
         PaddingValues(  top = (it.top ?: it.all ?: 0).dp,
