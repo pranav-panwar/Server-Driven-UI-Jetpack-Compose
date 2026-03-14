@@ -46,7 +46,9 @@ internal fun RenderButton(
         shape = buttonShape,
         colors = ButtonDefaults.buttonColors(containerColor =  buttonStyle?.buttonColor?.convertToIntColor()?.convertToColor()?:"#ffffff".convertToIntColor().convertToColor()),
         onClick = {
-            handleAction(component.action, onEvent, dataJson, state)
+            component.action?.let{
+                handleAction(component.action, onEvent, dataJson, state)
+            }
         },
         modifier =modifier.then( component.style?.modifier?.toModifier() ?: Modifier)
     ) {

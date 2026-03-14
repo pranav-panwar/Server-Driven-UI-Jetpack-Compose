@@ -40,6 +40,7 @@ internal fun RenderBox(
                 } else Modifier),
         contentAlignment = component.style?.boxContentAlignment.boxContentAlignment()
     ) {
+        if(component.itemTemplate!=null)
         RenderComponent(component.itemTemplate, dataJson, state, onEvent)
     }
 
