@@ -1,5 +1,6 @@
 package com.praptechie.serverdrivenuicompose
 
+import android.content.Context
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -22,20 +23,23 @@ import com.praptechie.serverdrivenuicompose.ui_elements.RenderComponent
 import com.praptechie.serverdrivenuicompose.view_model.ServerDrivenUIViewModel
 import kotlinx.serialization.json.JsonObject
 
-class ServerDrivenUiHandler {
-
+class ServerDrivenUiHandler() {
     @Composable
     fun ServerDrivenContainer(
         uiJsonString: String,
         dataJsonString: String,
         modifier: Modifier = Modifier,
-        onEvent: (ServerDrivenEvent) -> Unit = {}
+        fallbackContent: @Composable (() -> Unit)? = null,
+        onEvent: (ServerDrivenEvent) -> Unit = {},
+        onError: ((String) -> Unit)? = null
     ) {
         MainScreen(
             uiJsonString = uiJsonString,
             dataJsonString = dataJsonString,
             modifier = modifier,
-            onEvent = onEvent
+            fallbackContent = fallbackContent,
+            onEvent = onEvent,
+            onError = onError
         )
     }
 
@@ -44,8 +48,10 @@ class ServerDrivenUiHandler {
         uiJsonString: String,
         dataJsonString: String,
         modifier: Modifier = Modifier,
+        fallbackContent: @Composable (() -> Unit)? = null,
         viewModel: ServerDrivenUIViewModel = viewModel(),
-        onEvent: (ServerDrivenEvent) -> Unit = {}
+        onEvent: (ServerDrivenEvent) -> Unit = {},
+        onError: ((String) -> Unit)? = null
     ) {
 
         LaunchedEffect(uiJsonString) {
@@ -77,16 +83,23 @@ class ServerDrivenUiHandler {
             }
 
             error != null -> {
-                Box(
-                    modifier = modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = error ?: "Unknown error",
-                        color = MaterialTheme.colorScheme.error
-                    )
+                LaunchedEffect(error) {
+                    error?.let { onError?.invoke(it) }
+                }
+                if (fallbackContent != null) {
+                    fallbackContent()
+                } else {
+                    Box(
+                        modifier = modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = error ?: "Unknown error",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
 
