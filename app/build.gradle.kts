@@ -16,7 +16,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.praptechie.restrogrow"
+        applicationId = "com.praptechie.serverdrivenuijetpackcompose"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
