@@ -7,6 +7,7 @@ import com.praptechie.serverdrivenuicompose.data_models.ButtonComponent
 import com.praptechie.serverdrivenuicompose.data_models.CardComponent
 import com.praptechie.serverdrivenuicompose.data_models.ChipGroupComponent
 import com.praptechie.serverdrivenuicompose.data_models.ColumnComponent
+import com.praptechie.serverdrivenuicompose.data_models.DividerComponent
 import com.praptechie.serverdrivenuicompose.data_models.GridComponent
 import com.praptechie.serverdrivenuicompose.data_models.IconButtonComponent
 import com.praptechie.serverdrivenuicompose.data_models.ImageComponent
@@ -15,6 +16,7 @@ import com.praptechie.serverdrivenuicompose.data_models.LazyRowComponent
 import com.praptechie.serverdrivenuicompose.data_models.LazyVerticalStaggeredGridComponent
 import com.praptechie.serverdrivenuicompose.data_models.RowComponent
 import com.praptechie.serverdrivenuicompose.data_models.ServerDrivenEvent
+import com.praptechie.serverdrivenuicompose.data_models.SpacerComponent
 import com.praptechie.serverdrivenuicompose.data_models.TextComponent
 import com.praptechie.serverdrivenuicompose.data_models.UIComponent
 import com.praptechie.serverdrivenuicompose.handler_processors.ServerDrivenState
@@ -42,5 +44,7 @@ import kotlinx.serialization.json.JsonObject
         is BoxComponent -> RenderBox(component, dataJson, state, onEvent)
         is LazyRowComponent -> RenderLazyRow(component, dataJson, state, onEvent)
         is BottomBarComponent -> RenderBottomBarUi(component, dataJson, state, onEvent)
+        is SpacerComponent -> RenderSpacer(component, dataJson, state, onEvent)
+        is DividerComponent -> RenderDivider(component, dataJson, state, onEvent)
     }
 }

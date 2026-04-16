@@ -186,6 +186,23 @@ internal data class BottomBarComponent(
 ): UIComponent()
 
 @Serializable
+@SerialName("spacer")
+internal data class SpacerComponent(
+    override val type: String = "spacer",
+    val size: Int = 16,
+    override val style: ComponentStyle? = null
+) : UIComponent()
+
+@Serializable
+@SerialName("divider")
+internal data class DividerComponent(
+    override val type: String = "divider",
+    val thickness: Int = 1,
+    val color: String? = "#EEEEEE",
+    override val style: ComponentStyle? = null
+) : UIComponent()
+
+@Serializable
 internal data class BottomBarItems(val iconName:String?=null,val text:String?=null,val action: Action? = null)
 
 // ============ Enhanced Styles ============

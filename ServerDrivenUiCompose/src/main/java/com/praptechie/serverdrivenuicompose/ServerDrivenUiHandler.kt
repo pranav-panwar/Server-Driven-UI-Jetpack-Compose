@@ -1,5 +1,6 @@
 package com.praptechie.serverdrivenuicompose
 
+import android.content.Context
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -15,27 +16,70 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.LocalContext
 import com.praptechie.serverdrivenuicompose.data_models.ServerDrivenEvent
 import com.praptechie.serverdrivenuicompose.data_models.UIDefinition
 import com.praptechie.serverdrivenuicompose.handler_processors.ServerDrivenState
+import com.praptechie.serverdrivenuicompose.remote_config.SduiRemoteConfig
 import com.praptechie.serverdrivenuicompose.ui_elements.RenderComponent
 import com.praptechie.serverdrivenuicompose.view_model.ServerDrivenUIViewModel
 import kotlinx.serialization.json.JsonObject
 
-class ServerDrivenUiHandler {
+class ServerDrivenUiHandler() {
+
+    @Composable
+    fun ServerDrivenRemoteScreen(
+        screenKey: String,
+        dataJsonString: String,
+        modifier: Modifier = Modifier,
+        defaultUiJson: String? = null,
+        fetchIntervalSeconds: Long = 3600,
+        onEvent: (ServerDrivenEvent) -> Unit = {},
+        onError: ((String) -> Unit)? = null
+    ) {
+        val context = LocalContext.current
+        val liveUiJson = remember(screenKey) { mutableStateOf(defaultUiJson ?: "") }
+
+        LaunchedEffect(screenKey) {
+            SduiRemoteConfig.Builder(context)
+                .screenKey(screenKey)
+                .defaultJson(defaultUiJson ?: "")
+                .fetchIntervalSeconds(fetchIntervalSeconds)
+                .onUpdate { fetchedJson ->
+                    if (fetchedJson.isNotBlank()) {
+                        liveUiJson.value = fetchedJson
+                    }
+                }
+                .build()
+                .fetch()
+        }
+
+        ServerDrivenContainer(
+            uiJsonString = liveUiJson.value,
+            dataJsonString = dataJsonString,
+            modifier = modifier,
+            onEvent = onEvent,
+            onError = onError
+        )
+    }
 
     @Composable
     fun ServerDrivenContainer(
         uiJsonString: String,
         dataJsonString: String,
         modifier: Modifier = Modifier,
-        onEvent: (ServerDrivenEvent) -> Unit = {}
+        fallbackContent: @Composable (() -> Unit)? = null,
+        onEvent: (ServerDrivenEvent) -> Unit = {},
+        onError: ((String) -> Unit)? = null
     ) {
         MainScreen(
             uiJsonString = uiJsonString,
             dataJsonString = dataJsonString,
             modifier = modifier,
-            onEvent = onEvent
+            fallbackContent = fallbackContent,
+            onEvent = onEvent,
+            onError = onError
         )
     }
 
@@ -44,8 +88,10 @@ class ServerDrivenUiHandler {
         uiJsonString: String,
         dataJsonString: String,
         modifier: Modifier = Modifier,
+        fallbackContent: @Composable (() -> Unit)? = null,
         viewModel: ServerDrivenUIViewModel = viewModel(),
-        onEvent: (ServerDrivenEvent) -> Unit = {}
+        onEvent: (ServerDrivenEvent) -> Unit = {},
+        onError: ((String) -> Unit)? = null
     ) {
 
         LaunchedEffect(uiJsonString) {
@@ -77,16 +123,23 @@ class ServerDrivenUiHandler {
             }
 
             error != null -> {
-                Box(
-                    modifier = modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = error ?: "Unknown error",
-                        color = MaterialTheme.colorScheme.error
-                    )
+                LaunchedEffect(error) {
+                    error?.let { onError?.invoke(it) }
+                }
+                if (fallbackContent != null) {
+                    fallbackContent()
+                } else {
+                    Box(
+                        modifier = modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = error ?: "Unknown error",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
 
