@@ -16,14 +16,54 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.LocalContext
 import com.praptechie.serverdrivenuicompose.data_models.ServerDrivenEvent
 import com.praptechie.serverdrivenuicompose.data_models.UIDefinition
 import com.praptechie.serverdrivenuicompose.handler_processors.ServerDrivenState
+import com.praptechie.serverdrivenuicompose.remote_config.SduiRemoteConfig
 import com.praptechie.serverdrivenuicompose.ui_elements.RenderComponent
 import com.praptechie.serverdrivenuicompose.view_model.ServerDrivenUIViewModel
 import kotlinx.serialization.json.JsonObject
 
 class ServerDrivenUiHandler() {
+
+    @Composable
+    fun ServerDrivenRemoteScreen(
+        screenKey: String,
+        dataJsonString: String,
+        modifier: Modifier = Modifier,
+        defaultUiJson: String? = null,
+        fetchIntervalSeconds: Long = 3600,
+        onEvent: (ServerDrivenEvent) -> Unit = {},
+        onError: ((String) -> Unit)? = null
+    ) {
+        val context = LocalContext.current
+        val liveUiJson = remember(screenKey) { mutableStateOf(defaultUiJson ?: "") }
+
+        LaunchedEffect(screenKey) {
+            SduiRemoteConfig.Builder(context)
+                .screenKey(screenKey)
+                .defaultJson(defaultUiJson ?: "")
+                .fetchIntervalSeconds(fetchIntervalSeconds)
+                .onUpdate { fetchedJson ->
+                    if (fetchedJson.isNotBlank()) {
+                        liveUiJson.value = fetchedJson
+                    }
+                }
+                .build()
+                .fetch()
+        }
+
+        ServerDrivenContainer(
+            uiJsonString = liveUiJson.value,
+            dataJsonString = dataJsonString,
+            modifier = modifier,
+            onEvent = onEvent,
+            onError = onError
+        )
+    }
+
     @Composable
     fun ServerDrivenContainer(
         uiJsonString: String,
