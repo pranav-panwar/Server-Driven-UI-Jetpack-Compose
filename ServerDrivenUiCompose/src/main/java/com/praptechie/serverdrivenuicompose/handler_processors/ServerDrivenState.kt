@@ -6,7 +6,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlin.collections.set
 
 
-internal class ServerDrivenState {
+public class ServerDrivenState {
     private val _stateMap = mutableStateMapOf<String, JsonElement>()
     val stateMap: Map<String, JsonElement> get() = _stateMap
 

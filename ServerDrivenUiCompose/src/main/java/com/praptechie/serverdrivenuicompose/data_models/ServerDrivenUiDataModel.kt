@@ -17,6 +17,27 @@ internal sealed class UIComponent {
 }
 
 @Serializable
+@SerialName("text_input")
+internal data class TextInputComponent(
+    override val type: String = "text_input",
+    val stateKey: String,
+    val placeholder: String? = null,
+    val maxLines: Int? = 1,
+    val itemSize: ItemSize? = null,
+    override val style: ComponentStyle? = null
+) : UIComponent()
+
+@Serializable
+@SerialName("conditional")
+internal data class ConditionalComponent(
+    override val type: String = "conditional",
+    val condition: String,
+    @SerialName("then") val thenComponent: UIComponent,
+    @SerialName("else") val elseComponent: UIComponent? = null,
+    override val style: ComponentStyle? = null
+) : UIComponent()
+
+@Serializable
 @SerialName("column")
 internal data class ColumnComponent(
     override val type: String? = "column",
@@ -335,7 +356,7 @@ internal data class ItemSize(
 // ============ Actions ============
 
 @Serializable
-internal data class Action(
+public data class Action(
     val perform: String,
     val parameters: Map<String, String> = emptyMap()
 )

@@ -19,6 +19,8 @@ import com.praptechie.serverdrivenuicompose.data_models.ServerDrivenEvent
 import com.praptechie.serverdrivenuicompose.data_models.SpacerComponent
 import com.praptechie.serverdrivenuicompose.data_models.TextComponent
 import com.praptechie.serverdrivenuicompose.data_models.UIComponent
+import com.praptechie.serverdrivenuicompose.data_models.TextInputComponent
+import com.praptechie.serverdrivenuicompose.data_models.ConditionalComponent
 import com.praptechie.serverdrivenuicompose.handler_processors.ServerDrivenState
 import kotlinx.serialization.json.JsonObject
 
@@ -46,5 +48,7 @@ import kotlinx.serialization.json.JsonObject
         is BottomBarComponent -> RenderBottomBarUi(component, dataJson, state, onEvent)
         is SpacerComponent -> RenderSpacer(component, dataJson, state, onEvent)
         is DividerComponent -> RenderDivider(component, dataJson, state, onEvent)
+        is TextInputComponent -> RenderTextInput(component, dataJson, state, onEvent)
+        is ConditionalComponent -> RenderConditional(component, dataJson, state, onEvent)
     }
 }

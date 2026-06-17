@@ -101,6 +101,11 @@ internal object TemplateProcessor {
             cleanSource
         }
 
+        val providerData = com.praptechie.serverdrivenuicompose.ServerDrivenUiHandler.getDataFromProvider(processedSource)
+        if (providerData != null) {
+            return providerData
+        }
+
         val parts = processedSource.split(".")
         var current: JsonElement = data
 
@@ -124,6 +129,72 @@ internal object TemplateProcessor {
             is JsonArray -> current.mapNotNull { it.jsonObjectOrNull }
             is JsonObject -> listOf(current)
             else -> emptyList()
+        }
+    }
+
+    fun evaluateCondition(
+        condition: String,
+        data: JsonObject,
+        state: Map<String, JsonElement>
+    ): Boolean {
+        if (condition.isBlank()) return false
+        val replaced = replaceVars(condition, data, state).trim()
+
+        return try {
+            when {
+                replaced.contains("==") -> {
+                    val parts = replaced.split("==")
+                    if (parts.size == 2) {
+                        parts[0].trim().equals(parts[1].trim(), ignoreCase = true)
+                    } else false
+                }
+                replaced.contains("!=") -> {
+                    val parts = replaced.split("!=")
+                    if (parts.size == 2) {
+                        !parts[0].trim().equals(parts[1].trim(), ignoreCase = true)
+                    } else false
+                }
+                replaced.contains(">=") -> {
+                    val parts = replaced.split(">=")
+                    if (parts.size == 2) {
+                        val v1 = parts[0].trim().toDoubleOrNull()
+                        val v2 = parts[1].trim().toDoubleOrNull()
+                        if (v1 != null && v2 != null) v1 >= v2 else false
+                    } else false
+                }
+                replaced.contains("<=") -> {
+                    val parts = replaced.split("<=")
+                    if (parts.size == 2) {
+                        val v1 = parts[0].trim().toDoubleOrNull()
+                        val v2 = parts[1].trim().toDoubleOrNull()
+                        if (v1 != null && v2 != null) v1 <= v2 else false
+                    } else false
+                }
+                replaced.contains(">") -> {
+                    val parts = replaced.split(">")
+                    if (parts.size == 2) {
+                        val v1 = parts[0].trim().toDoubleOrNull()
+                        val v2 = parts[1].trim().toDoubleOrNull()
+                        if (v1 != null && v2 != null) v1 > v2 else false
+                    } else false
+                }
+                replaced.contains("<") -> {
+                    val parts = replaced.split("<")
+                    if (parts.size == 2) {
+                        val v1 = parts[0].trim().toDoubleOrNull()
+                        val v2 = parts[1].trim().toDoubleOrNull()
+                        if (v1 != null && v2 != null) v1 < v2 else false
+                    } else false
+                }
+                else -> {
+                    replaced.equals("true", ignoreCase = true) ||
+                    replaced.equals("1", ignoreCase = true) ||
+                    (replaced.isNotEmpty() && !replaced.equals("false", ignoreCase = true) && !replaced.equals("0", ignoreCase = true))
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("TemplateProcessor", "Failed to evaluate condition: $condition", e)
+            false
         }
     }
 

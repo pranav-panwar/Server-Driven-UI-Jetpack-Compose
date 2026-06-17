@@ -39,7 +39,34 @@ import kotlinx.serialization.json.JsonObject
         TemplateProcessor.replaceVars(value, dataJson, state.stateMap)
     }
 
+    val processedAction = action.copy(parameters = processedParams)
+    if (com.praptechie.serverdrivenuicompose.ServerDrivenUiHandler.executeCustomAction(processedAction, dataJson, state)) {
+        return
+    }
+
     when (action.perform) {
+        "show_bottom_sheet" -> {
+            val title = processedParams["title"] ?: ""
+            val content = action.parameters["content"] ?: ""
+            state.update("sdui_bottom_sheet_title", title)
+            state.update("sdui_bottom_sheet_content", content)
+            state.update("sdui_bottom_sheet_visible", "true")
+        }
+        "hide_bottom_sheet" -> {
+            state.update("sdui_bottom_sheet_visible", "false")
+        }
+        "show_dialog" -> {
+            val title = processedParams["title"] ?: ""
+            val message = processedParams["message"] ?: ""
+            val content = action.parameters["content"] ?: ""
+            state.update("sdui_dialog_title", title)
+            state.update("sdui_dialog_message", message)
+            state.update("sdui_dialog_content", content)
+            state.update("sdui_dialog_visible", "true")
+        }
+        "hide_dialog" -> {
+            state.update("sdui_dialog_visible", "false")
+        }
         "navigate" -> {
             val screen = processedParams["screen"] ?: ""
             onEvent(ServerDrivenEvent.NavigationRequested(screen, processedParams))
