@@ -1,19 +1,46 @@
 package com.praptechie.serverdrivenuicompose.remote_config
 
 import android.content.Context
+import android.util.Log
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.ktx.remoteConfig
 import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
 import org.json.JSONObject
+import java.io.OutputStreamWriter
+import java.net.HttpURLConnection
+import java.net.URL
+import kotlin.concurrent.thread
 
 class SduiRemoteConfig private constructor(
+    private val context: Context,
     private val screenKey: String,
     private val defaultJson: String?,
     private val fetchIntervalSeconds: Long,
-    private val onUpdate: (String) -> Unit
+    private val cohortContext: Map<String, String>,
+    private val onUpdate: (String) -> Unit,
+    private val onVariantResolved: ((String, String?) -> Unit)?
 ) {
 
     private val remoteConfig = Firebase.remoteConfig
+    private val prefs = context.getSharedPreferences("SduiCache", Context.MODE_PRIVATE)
+
+    companion object {
+        private var appContext: Context? = null
+
+        @JvmStatic
+        fun init(context: Context) {
+            appContext = context.applicationContext
+        }
+
+        @JvmStatic
+        fun clearCachedVersion(screenKey: String) {
+            appContext?.getSharedPreferences("SduiCache", Context.MODE_PRIVATE)?.edit()?.remove(screenKey)?.apply()
+        }
+        
+        fun markLastKnownGood(context: Context, screenKey: String, json: String) {
+            context.getSharedPreferences("SduiCache", Context.MODE_PRIVATE).edit().putString(screenKey, json).apply()
+        }
+    }
 
     init {
         val configSettings = remoteConfigSettings {
@@ -21,36 +48,78 @@ class SduiRemoteConfig private constructor(
         }
         remoteConfig.setConfigSettingsAsync(configSettings)
         
-        // Set defaults if provided
         defaultJson?.let {
             remoteConfig.setDefaultsAsync(mapOf(screenKey to it))
         }
 
-        // Activate last fetched values immediately so they are available as "cached" values
         remoteConfig.activate()
     }
 
-    /**
-     * Fetches the latest configuration.
-     * Emits the cached value immediately, then fetches and emits the fresh value
-     * only if the version (or content) has changed.
-     */
-    fun fetch() {
-        // 1. Get currently active (cached or default) JSON
-        val cachedJson = remoteConfig.getString(screenKey)
-        if (cachedJson.isNotBlank()) {
-            onUpdate(cachedJson)
+    fun fetchWithVariantResolution(variantResolverUrl: String? = null) {
+        val lastKnownGood = prefs.getString(screenKey, null)
+        val cachedRcJson = remoteConfig.getString(screenKey)
+
+        // Try to show something immediately
+        if (!lastKnownGood.isNullOrBlank()) {
+            onUpdate(lastKnownGood)
+        } else if (cachedRcJson.isNotBlank()) {
+            onUpdate(cachedRcJson)
         }
 
-        // 2. Fetch and activate fresh data from the server
+        if (variantResolverUrl != null) {
+            thread {
+                try {
+                    val url = URL(variantResolverUrl)
+                    val conn = url.openConnection() as HttpURLConnection
+                    conn.requestMethod = "POST"
+                    conn.setRequestProperty("Content-Type", "application/json")
+                    conn.doOutput = true
+
+                    val payload = JSONObject().apply {
+                        put("screenKey", screenKey)
+                        val cohortObj = JSONObject()
+                        cohortContext.forEach { (k, v) -> cohortObj.put(k, v) }
+                        put("cohortContext", cohortObj)
+                    }
+
+                    OutputStreamWriter(conn.outputStream).use { it.write(payload.toString()) }
+
+                    if (conn.responseCode == 200) {
+                        val responseJson = conn.inputStream.bufferedReader().readText()
+                        val jsonObj = JSONObject(responseJson)
+                        val resolvedUiJson = jsonObj.optString("uiJson", null)
+                        val variant = jsonObj.optString("variant", null)
+
+                        if (!resolvedUiJson.isNullOrBlank()) {
+                            onUpdate(resolvedUiJson)
+                            if (variant != null) {
+                                onVariantResolved?.invoke(resolvedUiJson, variant)
+                            }
+                            return@thread
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("SduiRemoteConfig", "Variant resolution failed", e)
+                }
+                // Fallback to regular fetch
+                fetchRegular(lastKnownGood ?: cachedRcJson)
+            }
+        } else {
+            fetchRegular(lastKnownGood ?: cachedRcJson)
+        }
+    }
+
+    fun fetch() {
+        fetchWithVariantResolution(null)
+    }
+
+    private fun fetchRegular(currentlyShowingJson: String) {
         remoteConfig.fetchAndActivate()
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val freshJson = remoteConfig.getString(screenKey)
-                    
                     if (freshJson.isNotBlank()) {
-                        // 3. Only emit if it's different from what we just showed
-                        if (isNewer(cachedJson, freshJson) || freshJson != cachedJson) {
+                        if (isNewer(currentlyShowingJson, freshJson) || freshJson != currentlyShowingJson) {
                             onUpdate(freshJson)
                         }
                     }
@@ -58,11 +127,8 @@ class SduiRemoteConfig private constructor(
             }
     }
 
-    /**
-     * Compares two JSON strings to determine if the new one is actually an update.
-     * Priority is given to the 'version' field if present.
-     */
-    private fun isNewer(oldJson: String, newJson: String): Boolean {
+    private fun isNewer(oldJson: String?, newJson: String): Boolean {
+        if (oldJson == null) return true
         if (oldJson == newJson) return false
 
         val oldVersion = try { JSONObject(oldJson).optString("version", null) } catch (e: Exception) { null }
@@ -79,16 +145,21 @@ class SduiRemoteConfig private constructor(
         private var screenKey: String = ""
         private var defaultJson: String? = null
         private var fetchIntervalSeconds: Long = 3600
+        private var cohortContext: Map<String, String> = emptyMap()
         private var onUpdate: (String) -> Unit = {}
+        private var onVariantResolved: ((String, String?) -> Unit)? = null
 
         fun screenKey(key: String) = apply { this.screenKey = key }
         fun defaultJson(json: String) = apply { this.defaultJson = json }
         fun fetchIntervalSeconds(seconds: Long) = apply { this.fetchIntervalSeconds = seconds }
+        fun cohortContext(context: Map<String, String>) = apply { this.cohortContext = context }
         fun onUpdate(callback: (String) -> Unit) = apply { this.onUpdate = callback }
+        fun onVariantResolved(callback: (String, String?) -> Unit) = apply { this.onVariantResolved = callback }
 
         fun build(): SduiRemoteConfig {
             if (screenKey.isEmpty()) throw IllegalStateException("screenKey must be set")
-            return SduiRemoteConfig(screenKey, defaultJson, fetchIntervalSeconds, onUpdate)
+            init(context) // Ensure static context is set for clearCachedVersion
+            return SduiRemoteConfig(context, screenKey, defaultJson, fetchIntervalSeconds, cohortContext, onUpdate, onVariantResolved)
         }
     }
 }

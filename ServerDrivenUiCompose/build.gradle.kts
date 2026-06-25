@@ -82,6 +82,8 @@ dependencies {
     implementation(libs.kotlinx.serialization.json.v1110)
     implementation(libs.coil)
     implementation(libs.androidx.compose.material.icons.extended)
+    implementation("androidx.compose.material3:material3-window-size-class")
+    implementation("androidx.window:window:1.3.0")
     implementation(libs.androidx.lifecycle.runtime.compose.v2100)
     implementation(libs.androidx.lifecycle.viewmodel.compose.v2100)
     testImplementation(libs.junit)

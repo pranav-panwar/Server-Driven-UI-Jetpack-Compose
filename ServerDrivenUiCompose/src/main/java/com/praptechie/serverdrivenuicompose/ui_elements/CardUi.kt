@@ -19,8 +19,8 @@ import com.praptechie.serverdrivenuicompose.data_models.CardComponent
 import com.praptechie.serverdrivenuicompose.data_models.ServerDrivenEvent
 import com.praptechie.serverdrivenuicompose.handler_processors.ServerDrivenState
 import com.praptechie.serverdrivenuicompose.ui_elements_handler_styles.handleAction
+import com.praptechie.serverdrivenuicompose.ui_elements_handler_styles.convertToColor
 import com.praptechie.serverdrivenuicompose.ui_elements_handler_styles.toModifier
-import com.praptechie.serverdrivenuicompose.view_model.ServerDrivenUILogTag
 import kotlinx.serialization.json.JsonObject
 
 @Composable
@@ -54,7 +54,7 @@ internal fun RenderCard(
         shape = component.style?.cardStyle?.cardShape?.let {
             RoundedCornerShape(it.dp)
         } ?: RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor =Color( android.graphics.Color.parseColor(component?.style?.cardStyle?.cardContainerColor?:"#fff000")))
+        colors = CardDefaults.cardColors(containerColor = component.style?.cardStyle?.cardContainerColor.convertToColor())
     ) {
         Column(modifier = Modifier.padding(paddingValues), verticalArrangement = Arrangement.spacedBy(10.dp)){
             component.children.forEach { child ->

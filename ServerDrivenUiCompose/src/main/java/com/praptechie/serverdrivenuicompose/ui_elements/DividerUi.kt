@@ -10,6 +10,7 @@ import com.praptechie.serverdrivenuicompose.data_models.DividerComponent
 import com.praptechie.serverdrivenuicompose.data_models.ServerDrivenEvent
 import com.praptechie.serverdrivenuicompose.handler_processors.ServerDrivenState
 import kotlinx.serialization.json.JsonObject
+import com.praptechie.serverdrivenuicompose.ui_elements_handler_styles.convertToColor
 
 @Composable
 internal fun RenderDivider(
@@ -18,9 +19,10 @@ internal fun RenderDivider(
     state: ServerDrivenState,
     onEvent: (ServerDrivenEvent) -> Unit
 ) {
+    val dividerColor = component.color.convertToColor()
     HorizontalDivider(
         modifier = Modifier.padding(vertical = 4.dp),
         thickness = component.thickness.dp,
-        color = try { Color(android.graphics.Color.parseColor(component.color)) } catch (e: Exception) { Color.LightGray }
+        color = if (dividerColor == Color.Transparent) Color.LightGray else dividerColor
     )
 }

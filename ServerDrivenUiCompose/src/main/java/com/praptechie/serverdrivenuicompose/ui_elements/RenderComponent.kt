@@ -31,6 +31,33 @@ import kotlinx.serialization.json.JsonObject
     state: ServerDrivenState,
     onEvent: (ServerDrivenEvent) -> Unit
 ) {
+    val windowSize = com.praptechie.serverdrivenuicompose.LocalFireUiWindowSize.current
+    val windowSizeStr = when (windowSize) {
+        com.praptechie.serverdrivenuicompose.FireUiWindowSizeClass.COMPACT -> "compact"
+        com.praptechie.serverdrivenuicompose.FireUiWindowSizeClass.MEDIUM -> "medium"
+        com.praptechie.serverdrivenuicompose.FireUiWindowSizeClass.EXPANDED -> "expanded"
+    }
+
+    if (component.visibleOn != null && !component.visibleOn!!.contains(windowSizeStr)) {
+        return // Do not render on this breakpoint
+    }
+    val slotName = component.slot
+    if (slotName != null) {
+        val slotContent = com.praptechie.serverdrivenuicompose.ServerDrivenUiHandler.getSlotContent(slotName)
+        if (slotContent != null) {
+            val context = mapOf<String, Any?>(
+                "dataJson" to dataJson,
+                "stateMap" to state.stateMap,
+                "component" to component
+            )
+            slotContent(context)
+        } else {
+            // "render nothing in that slot's position (collapse to zero size) rather than crashing"
+            // we could report error, but we don't have direct access to onError here.
+        }
+        return
+    }
+
     when (component) {
         is ColumnComponent -> RenderColumn(component, dataJson, state, onEvent)
         is RowComponent -> RenderRow(component, dataJson, state, onEvent)
@@ -51,4 +78,24 @@ import kotlinx.serialization.json.JsonObject
         is TextInputComponent -> RenderTextInput(component, dataJson, state, onEvent)
         is ConditionalComponent -> RenderConditional(component, dataJson, state, onEvent)
     }
+}
+
+@Composable
+internal fun RenderTextInput(
+    component: TextInputComponent,
+    dataJson: JsonObject,
+    state: ServerDrivenState,
+    onEvent: (ServerDrivenEvent) -> Unit
+) {
+    // Stub renderer
+}
+
+@Composable
+internal fun RenderConditional(
+    component: ConditionalComponent,
+    dataJson: JsonObject,
+    state: ServerDrivenState,
+    onEvent: (ServerDrivenEvent) -> Unit
+) {
+    // Stub renderer
 }

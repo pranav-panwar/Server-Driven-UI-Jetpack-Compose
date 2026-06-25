@@ -22,6 +22,7 @@ import com.praptechie.serverdrivenuicompose.data_models.ServerDrivenEvent
 import com.praptechie.serverdrivenuicompose.handler_processors.ServerDrivenState
 import com.praptechie.serverdrivenuicompose.handler_processors.TemplateProcessor
 import com.praptechie.serverdrivenuicompose.ui_elements_handler_styles.handleAction
+import com.praptechie.serverdrivenuicompose.ui_elements_handler_styles.convertToColor
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
@@ -70,9 +71,9 @@ internal fun RenderChipGroup(
             Surface(
                 shape = RoundedCornerShape(style.borderRadius.dp),
                 color = if (isSelected) {
-                    Color(android.graphics.Color.parseColor(style.selectedBackgroundColor))
+                    style.selectedBackgroundColor.convertToColor()
                 } else {
-                    Color(android.graphics.Color.parseColor(style.backgroundColor))
+                    style.backgroundColor.convertToColor()
                 },
                 modifier = Modifier.clickable {
                     state.update(component.selectedStateKey, index)
@@ -88,9 +89,9 @@ internal fun RenderChipGroup(
                 Text(
                     text = label ?: "Unknown",  // ← Add fallback
                     color = if (isSelected) {
-                        Color(android.graphics.Color.parseColor(style.selectedTextColor))
+                        style.selectedTextColor.convertToColor()
                     } else {
-                        Color(android.graphics.Color.parseColor(style.textColor))
+                        style.textColor.convertToColor()
                     },
                     modifier = Modifier.padding(
                         horizontal = style.paddingHorizontal.dp,

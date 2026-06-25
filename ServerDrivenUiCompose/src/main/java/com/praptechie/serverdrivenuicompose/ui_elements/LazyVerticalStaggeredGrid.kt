@@ -40,13 +40,23 @@ internal fun RenderLazyVerticalStaggeredGrid(
     } else {
         Modifier.fillMaxWidth()
     }
+    val windowSize = com.praptechie.serverdrivenuicompose.LocalFireUiWindowSize.current
+    var resolvedColumns = component.columns ?: 2
+    component.responsiveColumns?.let {
+        when (windowSize) {
+            com.praptechie.serverdrivenuicompose.FireUiWindowSizeClass.COMPACT -> it.compact?.let { c -> resolvedColumns = c }
+            com.praptechie.serverdrivenuicompose.FireUiWindowSizeClass.MEDIUM -> it.medium?.let { c -> resolvedColumns = c }
+            com.praptechie.serverdrivenuicompose.FireUiWindowSizeClass.EXPANDED -> it.expanded?.let { c -> resolvedColumns = c }
+        }
+    }
+
     // Use your custom staggered grid composable
     LazyVerticalStaggeredGrid(
         horizontalArrangement = if(((component.horizontalSpacing?:0)>0))Arrangement.spacedBy(space=(component.horizontalSpacing?:8).dp, alignment = component.style?.columnStyle?.horizontalAlignment.toHorizontalAlignment()) else component.style?.columnStyle?.horizontalAlignment.toHorizontalArrangement(),
         verticalItemSpacing = (component.verticalSpacing?:0).dp,
         modifier = modifier
             .then(component.style?.modifier?.toModifier() ?: Modifier),
-        columns = StaggeredGridCells.Fixed(component.columns?:2),
+        columns = StaggeredGridCells.Fixed(resolvedColumns),
         content = {
             itemsIndexed(items) { index, item ->
                 val itemContext = buildJsonObject {

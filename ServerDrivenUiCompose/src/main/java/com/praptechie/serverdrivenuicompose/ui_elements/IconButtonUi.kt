@@ -21,6 +21,7 @@ import com.praptechie.serverdrivenuicompose.ui_elements_handler_styles.toModifie
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
+import com.praptechie.serverdrivenuicompose.ui_elements_handler_styles.convertToColor
 
 @Composable
 internal fun RenderIconButton(
@@ -57,13 +58,13 @@ internal fun RenderIconButton(
         style.toggledIconName else style?.iconName ?: "favorite_border"
     val icon = IconResolver.getIcon(iconName)
 
-    val iconColor = try {
-        if (isToggled && style?.toggledTint != null)
-            Color(android.graphics.Color.parseColor(style.toggledTint))
-        else if (style?.tint != null)
-            Color(android.graphics.Color.parseColor(style.tint))
-        else Color.Black
-    } catch (e: Exception) {
+    val iconColor = if (isToggled && style?.toggledTint != null) {
+        val color = style.toggledTint.convertToColor()
+        if (color == Color.Transparent) Color.Black else color
+    } else if (style?.tint != null) {
+        val color = style.tint.convertToColor()
+        if (color == Color.Transparent) Color.Black else color
+    } else {
         Color.Black
     }
 

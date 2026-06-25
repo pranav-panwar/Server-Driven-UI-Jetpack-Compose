@@ -35,9 +35,19 @@ internal fun RenderGrid(
     } else {
         Modifier.fillMaxWidth()
     }
+    val windowSize = com.praptechie.serverdrivenuicompose.LocalFireUiWindowSize.current
+    var resolvedColumns = component.columns ?: 2
+    component.responsiveColumns?.let {
+        when (windowSize) {
+            com.praptechie.serverdrivenuicompose.FireUiWindowSizeClass.COMPACT -> it.compact?.let { c -> resolvedColumns = c }
+            com.praptechie.serverdrivenuicompose.FireUiWindowSizeClass.MEDIUM -> it.medium?.let { c -> resolvedColumns = c }
+            com.praptechie.serverdrivenuicompose.FireUiWindowSizeClass.EXPANDED -> it.expanded?.let { c -> resolvedColumns = c }
+        }
+    }
+
     LazyVerticalGrid(
         modifier=modifier.then(component.style?.modifier.toModifier()),
-        columns = GridCells.Fixed(component.columns?:2),
+        columns = GridCells.Fixed(resolvedColumns),
         horizontalArrangement = Arrangement.spacedBy((component.spacing?:8).dp),
         verticalArrangement = Arrangement.spacedBy((component.spacing?:8).dp)
     ) {

@@ -1,5 +1,12 @@
 package com.praptechie.serverdrivenuicompose.ui_elements_handler_styles
 
+import androidx.compose.runtime.Composable
+import com.praptechie.serverdrivenuicompose.LocalFireUiTheme
+import com.praptechie.serverdrivenuicompose.LocalFireUiWindowSize
+import com.praptechie.serverdrivenuicompose.FireUiWindowSizeClass
+import com.praptechie.serverdrivenuicompose.data_models.FireUiTheme
+import com.praptechie.serverdrivenuicompose.data_models.ColorValue
+import com.praptechie.serverdrivenuicompose.ServerDrivenUiHandler
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -50,6 +57,11 @@ import kotlinx.serialization.json.JsonObject
             val content = action.parameters["content"] ?: ""
             state.update("sdui_bottom_sheet_title", title)
             state.update("sdui_bottom_sheet_content", content)
+            state.update("sdui_bottom_sheet_sheetSize", processedParams["sheetSize"] ?: "")
+            state.update("sdui_bottom_sheet_expandable", processedParams["expandable"] ?: "true")
+            state.update("sdui_bottom_sheet_collapsible", processedParams["collapsible"] ?: "true")
+            state.update("sdui_bottom_sheet_dismissOnOutsideClick", processedParams["dismissOnOutsideClick"] ?: "true")
+            state.update("sdui_bottom_sheet_initialState", processedParams["initialState"] ?: "")
             state.update("sdui_bottom_sheet_visible", "true")
         }
         "hide_bottom_sheet" -> {
@@ -62,6 +74,8 @@ import kotlinx.serialization.json.JsonObject
             state.update("sdui_dialog_title", title)
             state.update("sdui_dialog_message", message)
             state.update("sdui_dialog_content", content)
+            state.update("sdui_dialog_dismissOnOutsideClick", processedParams["dismissOnOutsideClick"] ?: "true")
+            state.update("sdui_dialog_dismissOnBackPress", processedParams["dismissOnBackPress"] ?: "true")
             state.update("sdui_dialog_visible", "true")
         }
         "hide_dialog" -> {
@@ -87,13 +101,25 @@ import kotlinx.serialization.json.JsonObject
 }
 // Add these extension functions to your file
 
- internal fun ModifierStyle?.toModifier(): Modifier {
+@Composable
+internal fun ModifierStyle?.toModifier(): Modifier {
     if (this == null) return Modifier
 
-    var modifier : Modifier= Modifier
+    val isDark = LocalFireUiTheme.current == FireUiTheme.DARK
+    val windowSize = LocalFireUiWindowSize.current
+    
+    var effectiveStyle: ModifierStyle = this
+    this.responsive?.let { resp ->
+        when (windowSize) {
+            FireUiWindowSizeClass.COMPACT -> resp.compact?.let { effectiveStyle = it }
+            FireUiWindowSizeClass.MEDIUM -> resp.medium?.let { effectiveStyle = it }
+            FireUiWindowSizeClass.EXPANDED -> resp.expanded?.let { effectiveStyle = it }
+        }
+    }
 
-    // Apply padding
-    this.padding?.let {
+    var modifier: Modifier = Modifier
+
+    effectiveStyle.padding?.let {
         modifier = modifier.padding(
             top = (it.top ?: it.all ?: 0).dp,
             bottom = (it.bottom ?: it.all ?: 0).dp,
@@ -102,22 +128,20 @@ import kotlinx.serialization.json.JsonObject
         )
     }
 
-    // Apply background color
-    this.backgroundColor?.let {
+    effectiveStyle.backgroundColor?.let {
         try {
-            modifier = modifier.background(Color(android.graphics.Color.parseColor(it)))
+            modifier = modifier.background(Color(android.graphics.Color.parseColor(it.resolve(isDark))))
         } catch (e: Exception) {
-            Log.e("ServerDrivenUILogTag", "ModifierStyle Exception - Invalid color: $it")
+            Log.e("ServerDrivenUILogTag", "ModifierStyle Exception - Invalid color: ${it.resolve(isDark)}")
         }
     }
 
-    // Apply clip shape
-    this.clip?.let {
+    effectiveStyle.clip?.let {
         if (it.shape == "rounded") {
             modifier = modifier.clip(RoundedCornerShape(it.radius.dp))
-        }
-        else if(it.shape=="circle")
+        } else if(it.shape == "circle") {
             modifier = modifier.clip(CircleShape)
+        }
     }
 
     return modifier
@@ -155,16 +179,22 @@ internal fun ItemSize?.toModifier(): Modifier {
 }
 
 
+@Composable
 internal fun TextStyle.toTextStyle(): androidx.compose.ui.text.TextStyle {
+    val isDark = LocalFireUiTheme.current == FireUiTheme.DARK
+    val colorStr = textColor?.resolve(isDark) ?: "#000000"
+    val resolvedFontFamily = fontFamily?.let { ServerDrivenUiHandler.getFontFamily(it) }
+    
     return androidx.compose.ui.text.TextStyle(
         fontSize = (fontSize?:16).sp,
-        color = Color(android.graphics.Color.parseColor(textColor)),
+        color = try { Color(android.graphics.Color.parseColor(colorStr)) } catch(e:Exception){ Color.Black },
         fontWeight = when (fontWeight?.lowercase()) {
             "bold" -> FontWeight.Bold
             "medium" -> FontWeight.Medium
             "light" -> FontWeight.Light
             else -> FontWeight.Normal
-        }
+        },
+        fontFamily = resolvedFontFamily ?: androidx.compose.ui.text.font.FontFamily.Default
     )
 }
 
@@ -222,9 +252,24 @@ internal fun String?.boxContentAlignment():Alignment{
 }
 
 internal fun String?.convertToIntColor(): Int {
-    return android.graphics.Color.parseColor(this)
+    if (this.isNullOrBlank()) return android.graphics.Color.BLACK
+    return try { android.graphics.Color.parseColor(this) } catch(e:Exception){ android.graphics.Color.BLACK }
+}
+
+@Composable
+internal fun ColorValue?.convertToIntColor(): Int {
+    if (this == null) return android.graphics.Color.BLACK
+    val isDark = LocalFireUiTheme.current == FireUiTheme.DARK
+    return try { android.graphics.Color.parseColor(this.resolve(isDark)) } catch(e:Exception){ android.graphics.Color.BLACK }
 }
 
 internal fun Int.convertToColor(): Color {
     return Color(this)
+}
+
+@Composable
+internal fun ColorValue?.convertToColor(): Color {
+    if (this == null) return Color.Transparent
+    val isDark = LocalFireUiTheme.current == FireUiTheme.DARK
+    return try { Color(android.graphics.Color.parseColor(this.resolve(isDark))) } catch(e:Exception){ Color.Transparent }
 }

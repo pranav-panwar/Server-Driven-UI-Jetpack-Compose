@@ -14,11 +14,15 @@ internal data class UIDefinition(
 internal sealed class UIComponent {
     abstract val type: String?
     abstract val style: ComponentStyle?
+    abstract val slot: String?
+    abstract val visibleOn: List<String>?
 }
 
 @Serializable
 @SerialName("text_input")
 internal data class TextInputComponent(
+    override val slot: String? = null,
+    override val visibleOn: List<String>? = null,
     override val type: String = "text_input",
     val stateKey: String,
     val placeholder: String? = null,
@@ -30,6 +34,8 @@ internal data class TextInputComponent(
 @Serializable
 @SerialName("conditional")
 internal data class ConditionalComponent(
+    override val slot: String? = null,
+    override val visibleOn: List<String>? = null,
     override val type: String = "conditional",
     val condition: String,
     @SerialName("then") val thenComponent: UIComponent,
@@ -40,6 +46,8 @@ internal data class ConditionalComponent(
 @Serializable
 @SerialName("column")
 internal data class ColumnComponent(
+    override val slot: String? = null,
+    override val visibleOn: List<String>? = null,
     override val type: String? = "column",
     override val style: ComponentStyle? = null,
     val itemSize: ItemSize?=null,
@@ -51,6 +59,8 @@ internal data class ColumnComponent(
 @Serializable
 @SerialName("row")
 internal data class RowComponent(
+    override val slot: String? = null,
+    override val visibleOn: List<String>? = null,
     override val type: String = "row",
     override val style: ComponentStyle? = null,
     val itemSize: ItemSize?=null,
@@ -60,6 +70,8 @@ internal data class RowComponent(
 @Serializable
 @SerialName("text")
 internal data class TextComponent(
+    override val slot: String? = null,
+    override val visibleOn: List<String>? = null,
     override val type: String = "text",
     val itemSize: ItemSize?=null,
     val dataBinding: String? = null,
@@ -79,6 +91,8 @@ internal data class TextContent(
 @Serializable
 @SerialName("image")
 internal data class ImageComponent(
+    override val slot: String? = null,
+    override val visibleOn: List<String>? = null,
     override val type: String = "image",
     val dataBinding: String? = null,
     val imageUrl: String? = null,
@@ -91,21 +105,26 @@ internal data class ImageComponent(
 @Serializable
 @SerialName("lazy_vertical_staggered_grid")
 internal data class LazyVerticalStaggeredGridComponent(
+    override val slot: String? = null,
+    override val visibleOn: List<String>? = null,
     override val type: String = "lazy_vertical_staggered_grid",
     val dataBinding: String? = null,
     val imageUrl: String? = null,
     val columns:Int?=2,
+    val responsiveColumns: ResponsiveValue<Int>? = null,
     val verticalSpacing:Int?=0,
     val horizontalSpacing:Int?=0,
     override val style: ComponentStyle? = null,
     val itemTemplate: UIComponent,
-    val itemSize: ItemSize? = null,  // ← ADD THIS from old
+    val itemSize: ItemSize? = null,
     val action: Action? = null
 ) : UIComponent()
 
 @Serializable
 @SerialName("button")
 internal data class ButtonComponent(
+    override val slot: String? = null,
+    override val visibleOn: List<String>? = null,
     override val type: String = "button",
     val text: String,
     val dataBinding: String? = null,
@@ -117,6 +136,8 @@ internal data class ButtonComponent(
 @Serializable
 @SerialName("card")
 internal data class CardComponent(
+    override val slot: String? = null,
+    override val visibleOn: List<String>? = null,
     override val type: String = "card",
     override val style: ComponentStyle? = null,
     val children: List<UIComponent> = emptyList(),
@@ -127,6 +148,8 @@ internal data class CardComponent(
 @Serializable
 @SerialName("chip_group")
 internal data class ChipGroupComponent(
+    override val slot: String? = null,
+    override val visibleOn: List<String>? = null,
     override val type: String = "chip_group",
     val dataBinding: String,
     val selectedStateKey: String = "selectedIndex",
@@ -139,6 +162,8 @@ internal data class ChipGroupComponent(
 @Serializable
 @SerialName("icon_button")
 internal data class IconButtonComponent(
+    override val slot: String? = null,
+    override val visibleOn: List<String>? = null,
     override val type: String = "icon_button",
     override val style: ComponentStyle? = null,
     val itemSize: ItemSize?=null,
@@ -159,15 +184,20 @@ internal data class GridComponent(
     override val type: String = "grid",
     val itemSize: ItemSize?=null,
     val columns: Int?= 2,
+    val responsiveColumns: ResponsiveValue<Int>? = null,
     val spacing: Int?= 8,
     val dataBinding: String,
-    override val style: ComponentStyle? = null,  // ← REORDER
+    override val style: ComponentStyle? = null,
+    override val slot: String? = null,
+    override val visibleOn: List<String>? = null,
     val itemTemplate: UIComponent
 ) : UIComponent()
 
 @Serializable
 @SerialName("lazy_column")
 internal data class LazyColumnComponent(
+    override val slot: String? = null,
+    override val visibleOn: List<String>? = null,
     override val type: String = "lazy_column",
     val spacing: Int ?= 8,
     val dataBinding: String,
@@ -179,6 +209,8 @@ internal data class LazyColumnComponent(
 @Serializable
 @SerialName("box")
 internal data class BoxComponent(
+    override val slot: String? = null,
+    override val visibleOn: List<String>? = null,
     override val type: String = "box",
     override val style: ComponentStyle? = null,  // ← REORDER
     val itemSize: ItemSize?=null,
@@ -189,6 +221,8 @@ internal data class BoxComponent(
 @Serializable
 @SerialName("lazy_row")
 internal data class LazyRowComponent(
+    override val slot: String? = null,
+    override val visibleOn: List<String>? = null,
     override val type: String = "lazy_row",
     val spacing: Int ?= 8,
     val dataBinding: String?=null,
@@ -200,6 +234,8 @@ internal data class LazyRowComponent(
 @Serializable
 @SerialName("bottom_bar")
 internal data class BottomBarComponent(
+    override val slot: String? = null,
+    override val visibleOn: List<String>? = null,
     override val type: String?="bottom_bar",
     override val style: ComponentStyle?,
     val itemSize: ItemSize?=null,
@@ -209,6 +245,8 @@ internal data class BottomBarComponent(
 @Serializable
 @SerialName("spacer")
 internal data class SpacerComponent(
+    override val slot: String? = null,
+    override val visibleOn: List<String>? = null,
     override val type: String = "spacer",
     val size: Int = 16,
     override val style: ComponentStyle? = null
@@ -217,9 +255,11 @@ internal data class SpacerComponent(
 @Serializable
 @SerialName("divider")
 internal data class DividerComponent(
+    override val slot: String? = null,
+    override val visibleOn: List<String>? = null,
     override val type: String = "divider",
     val thickness: Int = 1,
-    val color: String? = "#EEEEEE",
+    val color: ColorValue? = null,
     override val style: ComponentStyle? = null
 ) : UIComponent()
 
@@ -239,15 +279,17 @@ internal data class ComponentStyle(
     val iconButtonStyle: IconButtonStyle? = null,
     val bottomBarStyle: BottomBarStyle? = null,
     val buttonStyle: ButtonStyle? = null,
-    val boxContentAlignment: String? = null  // ← ADD THIS from old
+    val boxContentAlignment: String? = null,
+    val responsive: ResponsiveValue<ComponentStyle>? = null  // ← ADD THIS from old
 )
 
 @Serializable
 internal data class ModifierStyle(
     val clip: ModifierClipData? = null,  // ← REORDER
-    val backgroundColor: String? = null,
+    val backgroundColor: ColorValue? = null,
     val padding: Padding? = null,
-    val onClick: OnClickData? = null  // ← ADD THIS from old
+    val onClick: OnClickData? = null,
+    val responsive: ResponsiveValue<ModifierStyle>? = null  // ← ADD THIS from old
 )
 
 @Serializable
@@ -273,16 +315,17 @@ internal data class Padding(
 @Serializable
 internal data class TextStyle(
     val fontSize: Int?= 16,
-    val textColor: String? = "#000000",
-    val fontWeight: String? = "normal"
+    val textColor: ColorValue? = null,
+    val fontWeight: String? = "normal",
+    val fontFamily: String? = null
 )
 
 @Serializable
 internal data class ChipStyle(
-    val backgroundColor: String = "#E0E0E0",
-    val selectedBackgroundColor: String = "#6200EE",
-    val textColor: String = "#000000",
-    val selectedTextColor: String = "#FFFFFF",
+    val backgroundColor: ColorValue? = null,
+    val selectedBackgroundColor: ColorValue? = null,
+    val textColor: ColorValue? = null,
+    val selectedTextColor: ColorValue? = null,
     val borderRadius: Int = 20,
     val paddingHorizontal: Int = 16,
     val paddingVertical: Int = 8
@@ -305,7 +348,7 @@ internal data class RowStyle(
 @Serializable
 internal data class CardStyle(
     val cardShape:Int?=8,
-    val cardContainerColor:String?="#00ffff",
+    val cardContainerColor: ColorValue? = null,
     val cardPadding:Padding?=null
 )
 
@@ -315,24 +358,24 @@ internal data class IconButtonStyle(
     val iconName: String,
     val toggledIconName: String? = null,
     val iconSize: Int = 24,
-    val tint: String? = "#666666",
-    val toggledTint: String? = null,
+    val tint: ColorValue? = null,
+    val toggledTint: ColorValue? = null,
     val toggleStateFrom: String? = null
 )
 
 @Serializable
 internal data class ButtonStyle(
-    val buttonColor: String?="#ffffff",
+    val buttonColor: ColorValue? = null,
     val buttonShape:String?="DEFAULT",
     val buttonRounded:Int?=0,
-    val buttonTextColor:String?="#ffffff",
+    val buttonTextColor: ColorValue? = null,
     val buttonTextSize:Int?=12,
 )
 
 @Serializable
 internal data class BottomBarStyle(
-    val iconColor: String? = "#ffffff",
-    val textColor: String? = "#ffffff",
+    val iconColor: ColorValue? = null,
+    val textColor: ColorValue? = null,
 )
 
 @Serializable
@@ -363,9 +406,47 @@ public data class Action(
 
 
 public sealed class ServerDrivenEvent {
-    data class ButtonClicked(val actionId: String, val parameters: Map<String, String>) : ServerDrivenEvent()
-    data class ItemClicked(val itemId: String, val index: Int) : ServerDrivenEvent()
-    data class ChipSelected(val chipId: String, val index: Int) : ServerDrivenEvent()
-    data class NavigationRequested(val screen: String, val parameters: Map<String, String>) : ServerDrivenEvent()
-    data class StateUpdateRequested(val key: String, val value: String) : ServerDrivenEvent()
+    abstract val screenKey: String?
+    abstract val variant: String?
+
+    data class ScreenRendered(
+        override val screenKey: String,
+        override val variant: String?,
+        val componentCount: Int
+    ) : ServerDrivenEvent()
+
+    data class ButtonClicked(
+        val actionId: String,
+        val parameters: Map<String, String>,
+        override val screenKey: String? = null,
+        override val variant: String? = null
+    ) : ServerDrivenEvent()
+
+    data class ItemClicked(
+        val itemId: String,
+        val index: Int,
+        override val screenKey: String? = null,
+        override val variant: String? = null
+    ) : ServerDrivenEvent()
+
+    data class ChipSelected(
+        val chipId: String,
+        val index: Int,
+        override val screenKey: String? = null,
+        override val variant: String? = null
+    ) : ServerDrivenEvent()
+
+    data class NavigationRequested(
+        val screen: String,
+        val parameters: Map<String, String>,
+        override val screenKey: String? = null,
+        override val variant: String? = null
+    ) : ServerDrivenEvent()
+
+    data class StateUpdateRequested(
+        val key: String,
+        val value: String,
+        override val screenKey: String? = null,
+        override val variant: String? = null
+    ) : ServerDrivenEvent()
 }

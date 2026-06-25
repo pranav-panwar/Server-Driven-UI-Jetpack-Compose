@@ -44,66 +44,56 @@ dependencies {
 
 ## 🚀 Quickstart
 
-### ⚡ Option 1: Automated Synchronization (Remote Config)
-The SDK now provides a high-level composable that handles Firebase Remote Config fetching, caching, and state management automatically.
+### ⚡ Option 1: Automated Synchronization (Remote Config & FireUI)
+The SDK provides a high-level `FireUI` wrapper composable that handles Firebase Remote Config fetching, caching, and state management automatically.
 
+First, initialize the handler with default configurations:
+```kotlin
+val serverDrivenUiHandler = ServerDrivenUiHandler.Builder()
+    .defaultUiJson("home_tab_config", fallbackJson) // Fallback offline JSON
+    .defaultDataJson("home_tab_config", myRuntimeData) // Fallback data JSON
+    .fetchIntervalSeconds(3600) // Fetch from Firebase Remote Config once per hour
+    .build()
+```
+
+Then, wrap your composable:
 ```kotlin
 @Composable
 fun MyScreen(serverDrivenUiHandler: ServerDrivenUiHandler) {
-    serverDrivenUiHandler.ServerDrivenRemoteScreen(
+    serverDrivenUiHandler.FireUI(
         screenKey = "home_tab_config",   // Remote Config key
-        dataJsonString = myRuntimeData,   // Your runtime JSON data
-        defaultUiJson = fallbackJson,     // Offline fallback JSON
         onEvent = { event ->
             // Handle events
         }
-    )
+    ) {
+        // User's own Composable content here
+        MainScreen()
+    }
 }
 ```
 
-### 🛠 Option 2: Minimal Example (Manual)
+### 🛠 Option 2: Imperative Loading (Manual Injection)
+You can inject UI templates and dynamic data imperatively directly into the handler:
 
 ```kotlin
-@Composable
-fun MyScreen() {
-    val uiJsonString = """
-    {
-      "version": "1.0.0",
-      "uiData": [
-        {
-          "type": "column",
-          "style": {
-            "modifier": { "padding": { "all": 16 } },
-            "columnStyle": { "spaceBy": 8 }
-          },
-          "children": [
-            {
-              "type": "text",
-              "content": [{ "text": "Welcome to Server-Driven UI!" }],
-              "style": {
-                "textStyle": {
-                  "fontSize": 24,
-                  "textColor": "#000000",
-                  "fontWeight": "bold"
-                }
-              }
-            }
-          ]
-        }
-      ]
-    }
-    """.trimIndent()
+// Initialize the handler
+val serverDrivenUiHandler = ServerDrivenUiHandler()
 
-    ServerDrivenContainer(
-        uiJsonString = uiJsonString,
-        dataJsonString = "{}",
+// Load UI and data imperatively at runtime
+serverDrivenUiHandler.loadUI("home_tab_config", uiJsonString)
+serverDrivenUiHandler.loadData("home_tab_config", myDataClassInstance)
+
+@Composable
+fun MyScreen(serverDrivenUiHandler: ServerDrivenUiHandler) {
+    serverDrivenUiHandler.FireUI(
+        screenKey = "home_tab_config",
         onEvent = { event ->
-            when (event) {
-                // Handle events (navigation, actions, etc.)
-                else -> {}
-            }
+            // Handle events
         }
-    )
+    ) {
+        // User's own UI
+        Text("Welcome to Server-Driven UI!")
+    }
 }
 ```
 
@@ -548,26 +538,23 @@ Here's a complete example of a photo feed UI:
 
 ```kotlin
 @Composable
-fun PhotoFeedScreen(viewModel: PhotoViewModel) {
-    val uiJson = /* load from Firebase or API */
-    val dataJson = /* load from Firebase or API */
-
-    ServerDrivenContainer(
-        uiJsonString = uiJson,
-        dataJsonString = dataJson,
+fun PhotoFeedScreen(handler: ServerDrivenUiHandler, viewModel: PhotoViewModel) {
+    handler.FireUI(
+        screenKey = "photo_feed",
         onEvent = { event ->
             when (event) {
-                is ServerDrivenEvent.ActionPerformed -> {
-                    when (event.action.perform) {
-                        "like" -> {
-                            val postId = event.action.parameters["postId"]
-                            viewModel.toggleLike(postId)
-                        }
+                is ServerDrivenEvent.ButtonClicked -> {
+                    if (event.actionId == "like") {
+                        val postId = event.parameters["postId"]
+                        viewModel.toggleLike(postId)
                     }
                 }
+                else -> {}
             }
         }
-    )
+    ) {
+        // User content
+    }
 }
 ```
 
@@ -578,24 +565,24 @@ fun PhotoFeedScreen(viewModel: PhotoViewModel) {
 Register event handlers to respond to user interactions:
 
 ```kotlin
-ServerDrivenContainer(
-    uiJsonString = uiJsonString,
-    dataJsonString = dataJsonString,
+handler.FireUI(
+    screenKey = "main_screen",
     onEvent = { event ->
         Log.d("ServerDrivenUI", "Event received: $event")
         when (event) {
-            is ServerDrivenEvent.ActionPerformed -> {
-                val action = event.action.perform
-                when (action) {
-                    "navigate" -> navigateToScreen(event.action.parameters["screen"])
-                    "like" -> likePost(event.action.parameters["postId"])
-                    "share" -> shareContent(event.action.parameters["text"])
+            is ServerDrivenEvent.ButtonClicked -> {
+                when (event.actionId) {
+                    "navigate" -> navigateToScreen(event.parameters["screen"])
+                    "like" -> likePost(event.parameters["postId"])
+                    "share" -> shareContent(event.parameters["text"])
                 }
             }
             else -> {}
         }
     }
-)
+) {
+    // User content
+}
 ```
 
 ---
@@ -704,6 +691,52 @@ When these actions run, the SDK updates specific reserved keys in `ServerDrivenS
 | **`sdui_dialog_title`** | `String` | Stores the title text of the dialog. |
 | **`sdui_dialog_message`** | `String` | Stores the description/message text of the dialog. |
 | **`sdui_dialog_content`** | `String` (JSON template) | Stores the raw JSON template for the dialog's custom body. |
+
+---
+
+## 🎭 Showing Dialogs & Bottom Sheets (Imperative API)
+
+With the introduction of the `FireUI` wrapper and `FireUIScope`, you can imperatively control overlays from within your custom native Compose content using `LocalFireUIScope`.
+
+### 1. Register your Slot Composable content
+
+Before triggering bottom sheets or dialogs via slots, register your Composable content with the `ServerDrivenUiHandler` companion:
+
+```kotlin
+ServerDrivenUiHandler.registerSlotContent("my_premium_checkout_form") { slotContext ->
+    // Your native Compose UI element or screen
+    PremiumCheckoutForm()
+}
+```
+
+### 2. Trigger overlays from custom content
+
+Inside your screen wrapped in `FireUI`, call `LocalFireUIScope.current` to show or dismiss the overlays:
+
+```kotlin
+@Composable
+fun MainScreen() {
+    val uiScope = LocalFireUIScope.current
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        Text("Your Custom App Content")
+
+        Button(onClick = {
+            // Trigger bottom sheet using registered slot content key
+            uiScope.showBottomSheet("my_premium_checkout_form")
+        }) {
+            Text("Upgrade to Premium")
+        }
+
+        Button(onClick = {
+            // Trigger dialog
+            uiScope.showDialog("my_premium_checkout_form")
+        }) {
+            Text("Show Preview Dialog")
+        }
+    }
+}
+```
 
 ---
 
@@ -817,48 +850,45 @@ The main entry point class for rendering Server-Driven UI components. It integra
 
 #### 🛠️ Key Functions & Composables
 
-##### `ServerDrivenRemoteScreen`
-High-level screen wrapper that fetches JSON layouts dynamically from Firebase Remote Config. It handles automated caching, fetch intervals, updates, and hot-swapping layouts.
+##### `FireUI`
+Top-level wrapper and parent/host container composable that synchronizes layouts using Remote Config, manages overlays (dialogs, bottom sheets) on top of the user's Compose tree, and supports custom content passing as a child inside composition.
 * **Signature:**
   ```kotlin
   @Composable
-  fun ServerDrivenRemoteScreen(
-      screenKey: String,
-      dataJsonString: String,
-      modifier: Modifier = Modifier,
-      defaultUiJson: String? = null,
-      fetchIntervalSeconds: Long = 3600,
-      onEvent: (ServerDrivenEvent) -> Unit = {},
-      onError: ((String) -> Unit)? = null
+  fun ServerDrivenUiHandler.FireUI(
+      screenKey: String,                          // Remote Config key / Screen identifier
+      onEvent: (ServerDrivenEvent) -> Unit = {},  // Event callback
+      modifier: Modifier = Modifier,              // Layout modifiers
+      onError: ((String) -> Unit)? = null,        // Error handler callback
+      content: @Composable FireUIScope.() -> Unit // Trailing lambda for user content
   )
   ```
 * **Parameters:**
-  * `screenKey` (String): The Firebase Remote Config identifier/parameter holding the UI schema JSON.
-  * `dataJsonString` (String): The runtime dynamic JSON data string injected into layout templates.
-  * `modifier` (Modifier): UI layout adjustments for the screen wrapper.
-  * `defaultUiJson` (String?): Offline fallback layout JSON if Firebase fetch fails or hasn't completed.
-  * `fetchIntervalSeconds` (Long): Cache lifetime in seconds (defaults to `3600` / 1 hour).
+  * `screenKey` (String): The Firebase Remote Config identifier holding the UI schema JSON.
   * `onEvent` (Lambda): Callback wrapper receiving interactive user events.
+  * `modifier` (Modifier): UI layout adjustments for the screen wrapper.
   * `onError` (Lambda): Optional callback triggered if JSON parsing or rendering fails.
+  * `content` (Lambda): Composable slot providing a `FireUIScope` receiver, containing the user's own Compose screen layout.
 
-##### `ServerDrivenContainer`
-High-level public container to render local or statically loaded JSON files.
-* **Signature:**
-  ```kotlin
-  @Composable
-  fun ServerDrivenContainer(
-      uiJsonString: String,
-      dataJsonString: String,
-      modifier: Modifier = Modifier,
-      fallbackContent: @Composable (() -> Unit)? = null,
-      onEvent: (ServerDrivenEvent) -> Unit = {},
-      onError: ((String) -> Unit)? = null
-  )
-  ```
-* **Parameters:**
-  * `uiJsonString` (String): Layout schema JSON.
-  * `dataJsonString` (String): Runtime dynamic JSON data string.
-  * `fallbackContent` (Composable): Optional Compose block displaying on error state.
+##### `FireUIScope`
+A control handle scope passed as the receiver of the `FireUI` content lambda, allowing imperative show/dismiss control over dialog and bottom sheet overlays.
+* **Methods:**
+  * `showBottomSheet(slotKey: String?)`: Displays the ModalBottomSheet rendering the registered Composable slot content.
+  * `dismissBottomSheet()`: Hides the currently visible bottom sheet.
+  * `showDialog(slotKey: String?)`: Displays the AlertDialog rendering the registered Composable slot content.
+  * `dismissDialog()`: Hides the currently visible dialog.
+
+##### `LocalFireUIScope`
+A `CompositionLocal` providing access to the current `FireUIScope` instance. This allows deeply nested composables to trigger overlays without passing properties down.
+* **Usage:** `val scope = LocalFireUIScope.current`
+
+##### `ServerDrivenRemoteScreen` (Deprecated ⚠️)
+> [!WARNING]
+> **Deprecated:** Use `FireUI` instead. Backward-compatible mapping is provided automatically.
+
+##### `ServerDrivenContainer` (Deprecated ⚠️)
+> [!WARNING]
+> **Deprecated:** Use `FireUI` instead. Backward-compatible mapping is provided automatically.
 
 ##### `MainScreen`
 Internal state manager that binds incoming strings to `ServerDrivenUIViewModel` and listens to state updates.
@@ -1244,3 +1274,46 @@ Contains composable renderers that map deserialized JSON components to Compose l
 * **`TextInputUi.kt`**: Renders OutlinedTextField input controls and binds entries to state keys reactively.
 * **`ConditionalUi.kt`**: Evaluates comparison expressions to toggle layouts dynamically.
 
+
+## New Features & Architecture (v1.2.3 Update)
+
+The FireUI SDK has been significantly updated with powerful new rendering and lifecycle capabilities.
+
+### 1. General Slot System
+FireUI now allows host applications to inject arbitrary native Jetpack Compose UI code into any server-driven component. This is done via the `slot` property.
+
+**Architecture:**
+- **Schema:** Any JSON component can define `"slot": "slot_name"`.
+- **Registry:** The host app registers the slot using `ServerDrivenUiHandler.registerSlotContent("slot_name") { context -> ... }`.
+- **Renderer:** When `RenderComponent` encounters a component with a `slot`, it renders the registered composable *instead* of the component's normal content, allowing deep integration of native and server-driven UI.
+
+### 2. Dialog and Bottom Sheet Enhancements
+Overlay controls are now fully customizable from the server.
+- **Properties Supported:** `dismissOnOutsideClick`, `dismissOnBackPress`, `sheetSize`, `expandable`, `collapsible`, `initialState`.
+- **Implementation:** Built on Compose Material 3 `ModalBottomSheet` and `AlertDialog`.
+- **Slot Integration:** Combine `show_bottom_sheet` with a custom `slot` content to render entirely native bottom sheets managed by server logic!
+
+### 3. Theme & Dark Mode Support
+FireUI now understands themes natively!
+- **Schema:** Use a `ColorValue` object instead of a string: `"backgroundColor": { "light": "#FFFFFF", "dark": "#000000" }`.
+- **Renderer:** `ServerDrivenUiHandler.setTheme()` allows overriding the system theme, and `LocalFireUiTheme` ensures all colors automatically react to dark mode toggles without requiring a new fetch.
+
+### 4. Responsive UI & Window Size Classes
+- **Schema:** Add a `responsive` object to `ComponentStyle` and `ModifierStyle` to override properties based on the breakpoint: `{ "compact": { ... }, "medium": { ... }, "expanded": { ... } }`.
+- **Grid Components:** `GridComponent` and `LazyVerticalStaggeredGridComponent` now support `responsiveColumns` to reflow content based on tablet/phone sizes.
+- **Visibility:** Use `"visibleOn": ["compact"]` to conditionally hide components.
+
+### 5. Custom Fonts
+- Pre-register fonts on app launch: `ServerDrivenUiHandler.registerFont("MyFont", MyFontFamily)`.
+- Use them safely in JSON via `"fontFamily": "MyFont"`. Falls back gracefully.
+
+### 6. A/B Testing & Variant Resolution
+- **cohortContext:** Pass dynamic user properties to the `ServerDrivenUiHandler` Builder.
+- **variantResolverUrl:** The SDK makes a POST request to this URL with the screen key and cohort context. It evaluates A/B test experiments, assigns a variant, and returns it.
+- **Fallback:** If variant resolution fails, it safely falls back to Firebase Remote Config.
+
+### 7. Version History & Offline Fallback
+- The SDK caches the "Last Known Good" configuration per screen. If a new fetch parses with errors or fails to render, it transparently rolls back to the cached version, ensuring 100% uptime.
+
+### 8. Custom SaaS-Level Analytics
+- All interactive actions (clicks, toggles) and screen views now emit a enriched `ServerDrivenEvent` including the `screenKey` and `variant`, which can be routed directly to Firebase Analytics or an external metrics pipeline.

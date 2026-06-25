@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import com.praptechie.example.ui.theme.ServerDrivenUIJetpackComposeTheme
 import com.praptechie.serverdrivenuicompose.ServerDrivenUiHandler
 import com.praptechie.serverdrivenuicompose.data_models.ServerDrivenEvent
+import com.praptechie.serverdrivenuicompose.FireUI
 
 class MainActivity : ComponentActivity() {
 
@@ -609,27 +610,29 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 1. Initialize the core SDUI renderer handler
-        serverDrivenUiHandler = ServerDrivenUiHandler()
+        // 1. Initialize the core SDUI renderer handler using the Builder
+        serverDrivenUiHandler = ServerDrivenUiHandler.Builder()
+            .defaultUiJson(SCREEN_KEY, DEFAULT_UI_JSON)
+            .defaultDataJson(SCREEN_KEY, DATA_JSON)
+            .fetchIntervalSeconds(0) // always fetch for dev
+            .build()
 
 
         // 2. Launch Compose UI
         setContent {
             ServerDrivenUIJetpackComposeTheme {
                 Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
-                    // 3. Render the Remote Screen with just the Screen Key and Data JSON
-                    // The SDK handles Remote Config fetching and hot-swapping automatically!
-                    serverDrivenUiHandler.ServerDrivenRemoteScreen(
+                    // 3. Render the screen using the FireUI wrapper composable
+                    serverDrivenUiHandler.FireUI(
                         screenKey = SCREEN_KEY,
-                        dataJsonString = DATA_JSON,
-                        defaultUiJson = DEFAULT_UI_JSON,
-                        fetchIntervalSeconds = 0, // 0 = always fetch for dev; use 3600 for prod
                         onEvent = { event -> handleSduiEvent(event) },
                         onError = { errorMsg ->
                             Log.e("SDUI", "Render error: $errorMsg")
                             Toast.makeText(this@MainActivity, "SDUI Error: $errorMsg", Toast.LENGTH_LONG).show()
                         }
-                    )
+                    ) {
+                        // Trailing lambda container content (optional local Compose screen content)
+                    }
                 }
             }
         }
