@@ -1465,3 +1465,126 @@ FireUI now understands themes natively!
 
 ### 8. Custom SaaS-Level Analytics
 - All interactive actions (clicks, toggles) and screen views now emit a enriched `ServerDrivenEvent` including the `screenKey` and `variant`, which can be routed directly to Firebase Analytics or an external metrics pipeline.
+
+---
+
+## 📋 Changelog For Fire UI - V2
+
+All notable changes to this project will be documented in this section.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+### [2.0.0] - 2026-07-01 - **FireUI Major Release** 🔥
+
+**The biggest release yet!** FireUI introduces a completely new API surface, native Compose slot integration, theming, responsive design, A/B testing, and enterprise-grade reliability features.
+
+#### ✨ Features
+- **FireUI Composable API** — New top-level `FireUI` composable with `FireUIScope` for imperative overlay control (dialogs, bottom sheets) from anywhere in your Compose tree
+- **Slot System** — Register native Compose components by key via `ServerDrivenUiHandler.registerSlotContent("key") { context -> ... }` and reference them from JSON using `"slot": "key"`
+- **Theme & Dark Mode Support** — Native `ColorValue` (light/dark) objects in JSON, `FireUiTheme` enum (LIGHT/DARK/SYSTEM), `LocalFireUiTheme` CompositionLocal, and `ServerDrivenUiHandler.setTheme()` for runtime theme switching
+- **Responsive UI & Window Size Classes** — `ResponsiveValue<T>` for breakpoint-specific overrides, `visibleOn` property to show/hide components per breakpoint (compact/medium/expanded), `FireUiWindowSizeClass` integration, and `responsiveColumns` for grids
+- **Custom Fonts** — `ServerDrivenUiHandler.registerFont("name", FontFamily)` API with graceful fallback in JSON via `"fontFamily": "name"`
+- **A/B Testing & Variant Resolution** — `cohortContext` in Builder, `variantResolverUrl` for server-side experiment assignment, `onVariantResolved` callback, with safe fallback to Firebase Remote Config
+- **Enhanced Offline Fallback ("Last Known Good")** — Automatic caching of successful renders per screen; transparent rollback on parse/render errors for 100% uptime
+- **Enhanced Analytics** — All `ServerDrivenEvent` emissions now enriched with `screenKey` and `variant` for SaaS-grade analytics pipelines
+- **Enhanced Dialogs & Bottom Sheets** — New properties: `dismissOnOutsideClick`, `dismissOnBackPress`, `sheetSize`, `expandable`, `collapsible`, `initialState`; full slot integration for native Compose overlays
+- **Custom Action Handlers** — `ServerDrivenUiHandler.registerCustomActionHandler` for client-side interception of actions (DB CRUD, refills, etc.)
+- **`LocalFireUIScope` CompositionLocal** — Access `FireUIScope` anywhere in the tree without prop drilling
+
+#### 🔧 Improvements
+- `ServerDrivenRemoteScreen` / `ServerDrivenContainer` **deprecated** → migrate to `FireUI` (backward-compatible wrappers provided)
+- Remote config fetch emits cached config immediately, then updates on fresh fetch
+- Improved error handling and logging throughout
+
+#### ⚠️ Breaking Changes
+- **API Surface**: Primary entry point is now `FireUI` composable; old `ServerDrivenRemoteScreen` and `ServerDrivenContainer` are deprecated (but still functional via compat layer)
+- **Version bump to 2.0.0** reflects the new architecture and Compose-first design
+
+---
+
+### [1.2.3] - 2026-04-16
+
+#### ✨ Features
+- **Enhanced Firebase Remote Config Sync** — Improved fetch/activate cycle with immediate cached emission
+- **Offline Fallback Caching** — "Last Known Good" configuration persisted per screen key
+- **Version Checking** — Automatic layout version comparison to detect updates
+
+#### 🔧 Improvements
+- Better error handling in remote config flow
+- Updated dependencies
+
+---
+
+### [1.2.2] - 2026-03-14
+
+#### 🐛 Bug Fixes
+- Fixed BoxUi layout measurement
+- Fixed ButtonUi text rendering
+- Fixed CardUi elevation/shadow
+- Fixed IconButtonUi toggle state handling
+- Fixed LazyRow item sizing
+
+#### 🔧 Improvements
+- Minor build configuration updates
+
+---
+
+### [1.2.1] - 2026-02-15
+
+#### 🔧 Improvements
+- Version bump and build configuration updates
+- JitPack publishing configuration fixes
+
+---
+
+### [1.2.0] - 2026-02-15
+
+#### ✨ Features
+- **Box Component** — Layered container with Z-index stacking support (`boxContentAlignment`)
+- **LazyRow Component** — Horizontally scrolling dynamic lists with `dataBinding` and `itemTemplate`
+- **BottomBar Component** — Navigation bar supporting multiple layouts: `standard`, `floating`, `labeled`, `icon_only`, `pill` with badges, indicators, and custom styling
+- **Spacer Component** — Fixed-size spacing utility
+- **Divider Component** — Horizontal divider with customizable thickness and color
+
+#### 🔧 Improvements
+- Enhanced TextUI rendering
+- Updated RenderComponent routing for new components
+
+---
+
+### [1.1.1] - 2025-12-XX
+
+#### 🐛 Bug Fixes
+- Column now takes max height when no explicit size is given (previously wrapped content incorrectly)
+
+---
+
+### [1.1.0] - 2025-12-XX
+
+#### ✨ Features
+- **itemSize System** — Unified sizing engine supporting `width`/`height` (fixed DP), `widthPercent`/`heightPercent` (0.0–1.0), and `weight` (proportional distribution in Column/Row)
+- **Custom Button Styling** — `buttonColor`, `buttonShape`, `buttonRounded`, `buttonTextColor`, `buttonTextSize` via `buttonStyle`
+
+#### 🔧 Improvements
+- UIDefinition data model enhancements
+- Removed margin support in favor of padding-based spacing
+
+#### ⚠️ Breaking Changes
+- `margin` removed from modifier styles; use `padding` instead
+- Button default styling changed (now white background, requires explicit color)
+
+---
+
+### [1.0.0] - 2025-10-XX
+
+#### ✨ Features
+- **Core SDK** — Server-Driven UI rendering for Jetpack Compose
+- **Components**: Column, Row, Text, Image, Button, Card, ChipGroup, IconButton, Grid, LazyColumn, LazyVerticalStaggeredGrid
+- **Firebase Remote Config Integration** — Automated fetch, cache, and activation
+- **JSON Templating Engine** — `{{item.field}}` syntax with `@dataKey` binding for lists/grids
+- **Dynamic Data Binding** — Runtime data injection via `dataJsonString`
+- **Action System** — `navigate`, `update_state`, `button_click` with parameter passing
+- **Event System** — `ButtonClicked`, `ItemClicked`, `ChipSelected`, `NavigationRequested`, `StateUpdateRequested`
+- **Styling System** — Padding, background, clip (rounded), text styles, card styles, chip styles, icon button styles
+- **Example App** — Complete photo feed demo with onboarding, splash, and Firebase integration
