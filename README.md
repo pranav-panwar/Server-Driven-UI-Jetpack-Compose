@@ -38,7 +38,19 @@ dependencies {
 }
 ```
 
-> **Note:** Replace `1.0.0` with the latest version from [releases](https://github.com/pranav-panwar/Server-Driven-UI-Jetpack-Compose/releases).
+> **Note:** Replace `1.1.1` with the latest version from [releases](https://github.com/pranav-panwar/Server-Driven-UI-Jetpack-Compose/releases).
+
+### Step 3: Optional Lottie Support (Onboarding / Splash)
+
+If you plan to use Lottie animations within the `onboarding_screen` or `splash_screen` components, add the Lottie for Compose dependency to your app's `build.gradle` (or `build.gradle.kts`):
+
+```gradle
+dependencies {
+    implementation 'com.airbnb.android:lottie-compose:6.4.0'
+}
+```
+
+If the library is not present, Lottie components will gracefully fall back to showing nothing with a logged warning, allowing you to opt-in to this feature only if needed.
 
 ---
 
@@ -146,7 +158,10 @@ Every component has this general structure:
 | **box** | Layered container | Stacks children (Z-index support) |
 | **spacer** | Fixed spacing | Adds gaps between components |
 | **divider** | Visual separator | Horizontal line with custom thickness |
-| **bottom_bar** | Navigation bar | Fixed bottom bar with icons/labels |
+| **bottom_bar** | Navigation bar | Upgraded navigation bar supporting floating, labeled, icon only, pill layouts, spacing, indicators, and item badges |
+| **top_app_bar** | Header action bar | Small or medium top app bar supporting title, subtitle, navigation icon, actions, and dropdown menu |
+| **onboarding_screen** | Screen carousel | Standalone carousel featuring page slide/fade/scale transitions, skip/finish buttons, indicators, and caching |
+| **splash_screen** | Intro launch screen | Full-screen splash layout featuring centered logos/Lottie animations, tagline text, and complete timing controls |
 
 ---
 
@@ -1098,11 +1113,11 @@ Here is the exact technical specification, default values, data processing, stat
 * **Default Behavior:** Fills maximum available height and width, layering components center-aligned at the top.
 
 ###### 14. `BottomBarComponent`
-* **Default Values:** `iconColor = "#ffffff"`, `textColor = "#ffffff"`, size = `fillMaxWidth()`, height = 60 (dp).
-* **Properties Supported:** `bottomBarItems: List<BottomBarItems>`, custom styles (`iconColor`, `textColor` via `bottomBarStyle`), `modifier` attributes.
-* **Working Mechanism:** Draws a fixed bottom row of navigation cells. Each navigation option contains a vertical stack of icon and label.
-* **Data Processing:** Reads hardcoded configurations.
-* **State & Data Handling:** Click triggers action definitions on item context.
+* **Default Values:** `iconColor = "#ffffff"`, `textColor = "#ffffff"`, size = `fillMaxWidth()`, height = 60 (dp), type = `"standard"`.
+* **Properties Supported:** `bottomBarItems: List<BottomBarItems>`, `selectedStateKey: String?`, custom styles (`type`, `backgroundColor`, `selectedColor`, `unselectedColor`, `indicatorColor`, `elevation`, `cornerRadius`, `showLabels`, `showIndicator`, `borderColor`, `height`, `itemSpacing` via `bottomBarStyle`), `modifier` attributes.
+* **Working Mechanism:** Draws a navigation bar supporting different layout types (standard, floating, labeled, icon_only, and pill).
+* **Data Processing:** Evaluates selected index via state key maps or falls back to internal composition state. Handles dynamic images/SVGs and badges on items.
+* **State & Data Handling:** Clicking updates the state map key and triggers action definitions on item context.
 * **Rendering Requirements:** Non-empty bottom navigation bar item list.
 * **Default Behavior:** Horizontal bottom bar distributing tabs evenly with white icons and text.
 
@@ -1141,6 +1156,139 @@ Here is the exact technical specification, default values, data processing, stat
 * **State & Data Handling:** Recomposes immediately if variables involved in the condition are modified.
 * **Rendering Requirements:** Valid `condition` string and a non-null `then` layout component.
 * **Default Behavior:** Conditionally routes rendering output.
+
+###### 19. `TopAppBarComponent`
+* **Default Values:** scrollBehavior = `"pinned"`, elevation = 0, cornerRadius = 0, overlayContent = false.
+* **Properties Supported:** `title: String`, `subtitle: String?`, `navigationIcon: TopAppBarNavigationIcon?`, `actions: List<TopAppBarActionItem>?`, custom styles (`backgroundColor`, `titleTextStyle`, `subtitleTextStyle`, `elevation`, `cornerRadius`, `scrollBehavior`, `overlayContent` via `topAppBarStyle`), `modifier` attributes.
+* **Working Mechanism:** Renders a Jetpack Compose `TopAppBar` or `MediumTopAppBar` (based on whether a subtitle is present).
+* **Data Processing:** Resolves color configurations dynamically. Dropdown menus are managed reactively via local click toggles.
+* **State & Data Handling:** Fires back navigation requested events automatically for `"back"` nav icon. Standard actions route parameters to `handleAction`.
+* **Rendering Requirements:** At least `title` text.
+* **Default Behavior:** Small top app bar aligned at the top with standard theme text styling.
+* **JSON Example:**
+  ```json
+  {
+    "type": "top_app_bar",
+    "title": "Screen Title",
+    "subtitle": "Optional subtitle",
+    "style": {
+      "topAppBarStyle": {
+        "backgroundColor": { "light": "#FFFFFF", "dark": "#1A1A1A" },
+        "cornerRadius": 12.0,
+        "elevation": 4.0,
+        "scrollBehavior": "pinned",
+        "overlayContent": false
+      }
+    },
+    "navigationIcon": {
+      "type": "back",
+      "tintColor": { "light": "#000000", "dark": "#FFFFFF" }
+    },
+    "actions": [
+      {
+        "type": "icon",
+        "iconName": "search",
+        "action": { "perform": "button_click", "parameters": { "actionCode": "search_tapped" } }
+      },
+      {
+        "type": "dropdown_trigger",
+        "iconName": "more_vert",
+        "dropdownMenu": {
+          "items": [
+            { "label": "Share", "iconName": "share", "action": { "perform": "button_click", "parameters": { "actionCode": "share_tapped" } } }
+          ]
+        }
+      }
+    ]
+  }
+  ```
+
+###### 20. `OnboardingScreenComponent`
+* **Default Values:** transitionAnimation = `"slide"`, pageIndicatorStyle = `"dots"`, showSkipButton = true, showNextButton = true, showPageIndicator = true.
+* **Properties Supported:** `pages: List<OnboardingPage>`, `cacheKey: String?`, `showEveryTime: Boolean?`, custom styles (`background` config, `nextButtonStyle`, `skipButtonStyle`, labels, colors, and transitions via `onboardingStyle`).
+* **Working Mechanism:** Renders a standalone horizontal carousel pager (`HorizontalPager`) with custom page layouts.
+* **Data Processing:** Maps pager fractions to transition animations (`fade`, `scale`, `slide`). Handles DataStore writes on completion.
+* **State & Data Handling:** Performs early skip action check from preference caching. Writes completions asynchronously using `CoroutineScope`.
+* **Rendering Requirements:** Non-empty `pages` list.
+* **Default Behavior:** Screen-covering onboarding walkthrough that displays next/skip buttons and saves completion.
+* **JSON Example:**
+  ```json
+  {
+    "type": "onboarding_screen",
+    "cacheKey": "user_onboarded_v1",
+    "showEveryTime": false,
+    "style": {
+      "background": {
+        "type": "gradient",
+        "gradient": { "colors": ["#1A1A2E", "#16213E"], "angle": 45.0 }
+      },
+      "nextButtonLabel": "Next Page",
+      "finishButtonLabel": "Get Started",
+      "showPageIndicator": true,
+      "pageIndicatorStyle": "dots",
+      "transitionAnimation": "scale",
+      "nextAction": { "perform": "navigate", "parameters": { "screen": "home" } },
+      "skipAction": { "perform": "navigate", "parameters": { "screen": "home" } }
+    },
+    "pages": [
+      {
+        "title": "Welcome to FireUI",
+        "subtitle": "Discover server driven interfaces.",
+        "media": {
+          "type": "image",
+          "url": "https://example.com/slide1.png"
+        }
+      },
+      {
+        "title": "Stay Updated",
+        "subtitle": "Instant updates without app releases.",
+        "media": {
+          "type": "lottie",
+          "url": "https://assets.mixkit.co/lottie/onboarding.json",
+          "loop": true,
+          "autoPlay": true
+        }
+      }
+    ]
+  }
+  ```
+
+###### 21. `SplashScreenComponent`
+* **Default Values:** duration = 2500 (ms).
+* **Properties Supported:** `background: BackgroundConfig`, `logo: SplashLogo?`, `tagline: String?`, `lottie: OnboardingMedia?`, `duration: Long?`, `onComplete: Action?`, `taglineStyle: TextStyle?`.
+* **Working Mechanism:** Full screen layout displaying backgrounds and animating a logo or Lottie asset.
+* **Data Processing:** Animates logo transformations (`scale`, `fade`, `rotate`, `slide_up`, `slide_down`, `bounce`) using customized Easing definitions.
+* **State & Data Handling:** Launches a timing block at screen creation, firing `onComplete` action once completed.
+* **Rendering Requirements:** `background` config, plus either `logo` or `lottie` spec.
+* **Default Behavior:** Displays logo centered for 2.5 seconds before launching main application.
+* **JSON Example:**
+  ```json
+  {
+    "type": "splash_screen",
+    "duration": 2500,
+    "background": {
+      "type": "color",
+      "color": { "light": "#FFFFFF", "dark": "#121212" }
+    },
+    "logo": {
+      "type": "image",
+      "url": "https://example.com/logo.png",
+      "size": { "width": 120, "height": 120 },
+      "animation": {
+        "type": "bounce",
+        "durationMs": 1000,
+        "delayMs": 200,
+        "fromScale": 0.3,
+        "toScale": 1.0
+      }
+    },
+    "tagline": "Server-driven UI simplified",
+    "onComplete": {
+      "perform": "navigate",
+      "parameters": { "screen": "onboarding" }
+    }
+  }
+  ```
 
 #### 🎨 Styling and Structural Classes
 * **`ComponentStyle`**: Direct CSS-like attribute holder aggregating styles (modifier, texts, grids, cards, etc.).
