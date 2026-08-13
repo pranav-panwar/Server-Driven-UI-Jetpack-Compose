@@ -1,4 +1,8 @@
-package com.praptechie.serverdrivenuicompose.remote_config
+import re
+
+file_path = "ServerDrivenUiCompose/src/main/java/com/praptechie/serverdrivenuicompose/remote_config/SduiRemoteConfig.kt"
+
+new_content = """package com.praptechie.serverdrivenuicompose.remote_config
 
 import android.content.Context
 import android.util.Log
@@ -59,19 +63,14 @@ class SduiRemoteConfig private constructor(
         val lastKnownGood = prefs.getString(screenKey, null)
         val cachedRcJson = remoteConfig.getString(screenKey)
 
-        Log.d("SduiRemoteConfig", "fetchWithVariantResolution started for $screenKey. lastKnownGood length: ${lastKnownGood?.length ?: 0}, cachedRcJson length: ${cachedRcJson.length}")
-
         // Try to show something immediately
         if (!lastKnownGood.isNullOrBlank()) {
-            Log.d("SduiRemoteConfig", "Showing lastKnownGood immediately for $screenKey")
             onUpdate(lastKnownGood)
         } else if (cachedRcJson.isNotBlank()) {
-            Log.d("SduiRemoteConfig", "Showing cachedRcJson immediately for $screenKey")
             onUpdate(cachedRcJson)
         }
 
         if (variantResolverUrl != null) {
-            Log.d("SduiRemoteConfig", "Resolving variant via url: $variantResolverUrl")
             thread {
                 try {
                     val url = URL(variantResolverUrl)
@@ -89,14 +88,12 @@ class SduiRemoteConfig private constructor(
 
                     OutputStreamWriter(conn.outputStream).use { it.write(payload.toString()) }
 
-                    Log.d("SduiRemoteConfig", "Variant resolution response code: ${conn.responseCode}")
                     if (conn.responseCode == 200) {
                         val responseJson = conn.inputStream.bufferedReader().readText()
                         val jsonObj = JSONObject(responseJson)
                         val resolvedUiJson = jsonObj.optString("uiJson", null)
                         val variant = jsonObj.optString("variant", null)
 
-                        Log.d("SduiRemoteConfig", "Variant resolution resolvedUiJson length: ${resolvedUiJson?.length ?: 0}, variant: $variant")
                         if (!resolvedUiJson.isNullOrBlank()) {
                             onUpdate(resolvedUiJson)
                             if (variant != null) {
@@ -109,7 +106,6 @@ class SduiRemoteConfig private constructor(
                     Log.e("SduiRemoteConfig", "Variant resolution failed", e)
                 }
                 // Fallback to regular fetch
-                Log.d("SduiRemoteConfig", "Falling back to regular fetch for $screenKey")
                 fetchRegular(lastKnownGood ?: cachedRcJson)
             }
         } else {
@@ -122,24 +118,15 @@ class SduiRemoteConfig private constructor(
     }
 
     private fun fetchRegular(currentlyShowingJson: String) {
-        Log.d("SduiRemoteConfig", "Fetching Remote Config for screen: $screenKey")
         remoteConfig.fetchAndActivate()
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val freshJson = remoteConfig.getString(screenKey)
-                    Log.d("SduiRemoteConfig", "Fetch successful for $screenKey. Fresh JSON length: ${freshJson.length}")
                     if (freshJson.isNotBlank()) {
                         if (isNewer(currentlyShowingJson, freshJson) || freshJson != currentlyShowingJson) {
-                            Log.d("SduiRemoteConfig", "Applying fresh JSON from Remote Config for $screenKey: $freshJson")
                             onUpdate(freshJson)
-                        } else {
-                            Log.d("SduiRemoteConfig", "Fetched JSON for $screenKey matches current or is older.")
                         }
-                    } else {
-                        Log.d("SduiRemoteConfig", "Fetched JSON for $screenKey is blank.")
                     }
-                } else {
-                    Log.e("SduiRemoteConfig", "Fetch failed for $screenKey", task.exception)
                 }
             }
     }
@@ -180,3 +167,9 @@ class SduiRemoteConfig private constructor(
         }
     }
 }
+"""
+
+with open(file_path, "w") as f:
+    f.write(new_content)
+
+print("Updated SduiRemoteConfig.kt")

@@ -21,6 +21,8 @@ lifecycleViewmodelComposeVersion = "2.10.0"
 material = "1.12.0"
 firebaseConfig = "22.0.0"
 firebaseBom = "33.1.2"
+lottieCompose = "6.4.0"
+datastorePreferences = "1.1.1"
 
 [libraries]
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
@@ -52,6 +54,8 @@ kotlinx-serialization-json-v1110 = { module = "org.jetbrains.kotlinx:kotlinx-ser
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 firebase-config = { group = "com.google.firebase", name = "firebase-config-ktx", version.ref = "firebaseConfig" }
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "lottieCompose" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

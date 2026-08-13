@@ -381,7 +381,8 @@ class ServerDrivenUiHandler() {
                 }
             }
 
-            uiDefinition != null && !dataJson.isNullOrEmpty() -> {
+            uiDefinition != null -> {
+                val resolvedDataJson = dataJson ?: remember { kotlinx.serialization.json.JsonObject(emptyMap()) }
                 LaunchedEffect(uiDefinition, screenKey) {
                     if (screenKey != null) {
                         SduiRemoteConfig.markLastKnownGood(context, screenKey, uiJsonString)
@@ -389,10 +390,10 @@ class ServerDrivenUiHandler() {
                     onEvent(ServerDrivenEvent.ScreenRendered(screenKey ?: "unknown", null, uiDefinition?.uiData?.size ?: 0))
                 }
 
-                val state = remember(uiDefinition, dataJson) { ServerDrivenState() }
+                val state = remember(uiDefinition, resolvedDataJson) { ServerDrivenState() }
                 ServerDrivenContent(
                     uiDefinition = uiDefinition!!,
-                    dataJson = dataJson!!,
+                    dataJson = resolvedDataJson,
                     state = state,
                     modifier = modifier,
                     onEvent = onEvent

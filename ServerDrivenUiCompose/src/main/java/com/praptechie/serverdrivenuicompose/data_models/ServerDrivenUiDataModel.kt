@@ -239,7 +239,8 @@ internal data class BottomBarComponent(
     override val type: String?="bottom_bar",
     override val style: ComponentStyle?,
     val itemSize: ItemSize?=null,
-    val bottomBarItems:List<BottomBarItems>?=null
+    val bottomBarItems:List<BottomBarItems>?=null,
+    val selectedStateKey: String? = null
 ): UIComponent()
 
 @Serializable
@@ -264,7 +265,15 @@ internal data class DividerComponent(
 ) : UIComponent()
 
 @Serializable
-internal data class BottomBarItems(val iconName:String?=null,val text:String?=null,val action: Action? = null)
+internal data class BottomBarItems(
+    val iconName: String? = null,
+    val text: String? = null,
+    val action: Action? = null,
+    val badge: String? = null,
+    val badgeColor: ColorValue? = null,
+    val imageUrl: String? = null,
+    val svgUrl: String? = null
+)
 
 // ============ Enhanced Styles ============
 
@@ -280,7 +289,8 @@ internal data class ComponentStyle(
     val bottomBarStyle: BottomBarStyle? = null,
     val buttonStyle: ButtonStyle? = null,
     val boxContentAlignment: String? = null,
-    val responsive: ResponsiveValue<ComponentStyle>? = null  // ← ADD THIS from old
+    val topAppBarStyle: TopAppBarStyle? = null,
+    val responsive: ResponsiveValue<ComponentStyle>? = null
 )
 
 @Serializable
@@ -376,6 +386,18 @@ internal data class ButtonStyle(
 internal data class BottomBarStyle(
     val iconColor: ColorValue? = null,
     val textColor: ColorValue? = null,
+    val type: String? = null,               // "standard" | "floating" | "labeled" | "icon_only" | "pill"
+    val backgroundColor: ColorValue? = null,
+    val selectedColor: ColorValue? = null,
+    val unselectedColor: ColorValue? = null,
+    val indicatorColor: ColorValue? = null, // pill/active indicator color
+    val elevation: Float? = null,
+    val cornerRadius: Float? = null,        // for "floating" type — rounds all corners
+    val showLabels: Boolean? = null,
+    val showIndicator: Boolean? = null,     // shows active pill/indicator behind selected item
+    val borderColor: ColorValue? = null,    // optional top/outer border
+    val height: Float? = null,              // custom height in dp
+    val itemSpacing: Float? = null
 )
 
 @Serializable
@@ -450,3 +472,172 @@ public sealed class ServerDrivenEvent {
         override val variant: String? = null
     ) : ServerDrivenEvent()
 }
+
+// ============ New SDUI Components ============
+
+@Serializable
+@SerialName("top_app_bar")
+internal data class TopAppBarComponent(
+    override val slot: String? = null,
+    override val visibleOn: List<String>? = null,
+    override val type: String = "top_app_bar",
+    override val style: ComponentStyle? = null,
+    val navigationIcon: TopAppBarNavigationIcon? = null,
+    val title: String? = null,
+    val subtitle: String? = null,
+    val actions: List<TopAppBarActionItem>? = null
+) : UIComponent()
+
+@Serializable
+internal data class TopAppBarStyle(
+    val backgroundColor: ColorValue? = null,
+    val titleTextStyle: TextStyle? = null,
+    val subtitleTextStyle: TextStyle? = null,
+    val elevation: Float? = null,
+    val cornerRadius: Float? = null,          // rounds bottom corners of the bar
+    val scrollBehavior: String? = null,        // "pinned" | "enterAlways" | "exitUntilCollapsed"
+    val overlayContent: Boolean? = null        // if true, bar floats over content (no top padding pushed)
+)
+
+@Serializable
+internal data class TopAppBarNavigationIcon(
+    val type: String,                          // "back" | "close" | "menu" | "image" | "svg" | "url"
+    val iconName: String? = null,              // material icon name if type = "back"/"close"/"menu"
+    val imageUrl: String? = null,              // remote image URL if type = "image" or "url"
+    val svgUrl: String? = null,                // remote SVG URL if type = "svg"
+    val contentDescription: String? = null,
+    val tintColor: ColorValue? = null,
+    val action: Action? = null                 // fires event or navigate; "back" type auto-fires NavigationRequested("back")
+)
+
+@Serializable
+internal data class TopAppBarActionItem(
+    val type: String,                          // "icon" | "image" | "svg" | "text" | "dropdown_trigger"
+    val iconName: String? = null,
+    val imageUrl: String? = null,
+    val svgUrl: String? = null,
+    val label: String? = null,
+    val contentDescription: String? = null,
+    val tintColor: ColorValue? = null,
+    val action: Action? = null,
+    val dropdownMenu: TopAppBarDropdownMenu? = null   // only when type = "dropdown_trigger"
+)
+
+@Serializable
+internal data class TopAppBarDropdownMenu(
+    val items: List<TopAppBarDropdownItem>
+)
+
+@Serializable
+internal data class TopAppBarDropdownItem(
+    val label: String,
+    val iconName: String? = null,
+    val action: Action? = null
+)
+
+@Serializable
+@SerialName("onboarding_screen")
+internal data class OnboardingScreenComponent(
+    override val slot: String? = null,
+    override val visibleOn: List<String>? = null,
+    override val type: String = "onboarding_screen",
+    @SerialName("style") val onboardingStyle: OnboardingScreenStyle? = null,
+    val pages: List<OnboardingPage>,
+    val cacheKey: String? = null,             // if set, show once and cache completion in DataStore
+    val showEveryTime: Boolean? = null        // if true, ignore cache and always show
+) : UIComponent() {
+    override val style: ComponentStyle? get() = null
+}
+
+@Serializable
+internal data class OnboardingPage(
+    val background: BackgroundConfig? = null, // overrides screen-level background for this page
+    val media: OnboardingMedia? = null,
+    val title: String? = null,
+    val titleStyle: TextStyle? = null,
+    val subtitle: String? = null,
+    val subtitleStyle: TextStyle? = null,
+    val customComponents: List<UIComponent>? = null  // any SDUI components rendered below subtitle
+)
+
+@Serializable
+internal data class OnboardingMedia(
+    val type: String,                // "image" | "lottie" | "svg" | "none"
+    val url: String? = null,         // remote URL for image/lottie/svg
+    val loop: Boolean? = null,       // lottie only
+    val autoPlay: Boolean? = null,   // lottie only
+    val size: ItemSize? = null
+)
+
+@Serializable
+internal data class BackgroundConfig(
+    val type: String,               // "color" | "gradient" | "image"
+    val color: ColorValue? = null,
+    val gradient: GradientConfig? = null,
+    val imageUrl: String? = null,   // full-screen background image (ContentScale.Crop)
+    val imageOverlayAlpha: Float? = null  // 0.0–1.0 dark overlay on top of bg image
+)
+
+@Serializable
+internal data class GradientConfig(
+    val colors: List<String>,        // list of hex color strings
+    val angle: Float? = null         // 0 = vertical top-to-bottom, 90 = left-to-right
+)
+
+@Serializable
+internal data class OnboardingScreenStyle(
+    val background: BackgroundConfig? = null,       // default background for all pages
+    val nextButtonStyle: ButtonStyle? = null,
+    val skipButtonStyle: ButtonStyle? = null,
+    val nextButtonLabel: String? = null,             // default "Next"
+    val finishButtonLabel: String? = null,           // label on last page, default "Get Started"
+    val skipButtonLabel: String? = null,             // default "Skip"
+    val showSkipButton: Boolean? = null,
+    val showNextButton: Boolean? = null,
+    val showPageIndicator: Boolean? = null,
+    val pageIndicatorActiveColor: ColorValue? = null,
+    val pageIndicatorInactiveColor: ColorValue? = null,
+    val pageIndicatorStyle: String? = null,          // "dots" | "lines" | "numbers"
+    val transitionAnimation: String? = null,         // "slide" | "fade" | "scale"
+    val nextAction: Action? = null,                  // fires on last page "finish" tap
+    val skipAction: Action? = null                   // fires on skip tap
+)
+
+@Serializable
+@SerialName("splash_screen")
+internal data class SplashScreenComponent(
+    override val slot: String? = null,
+    override val visibleOn: List<String>? = null,
+    override val type: String = "splash_screen",
+    val background: BackgroundConfig,         // reuse BackgroundConfig from onboarding
+    val logo: SplashLogo? = null,
+    val tagline: String? = null,
+    val taglineStyle: TextStyle? = null,
+    val lottie: OnboardingMedia? = null,      // reuse OnboardingMedia, type must be "lottie"
+    val duration: Long? = null,               // total splash duration in ms, default 2500
+    val onComplete: Action? = null            // action fired when splash duration ends
+) : UIComponent() {
+    override val style: ComponentStyle? get() = null
+}
+
+@Serializable
+internal data class SplashLogo(
+    val type: String,                         // "image" | "svg" | "text"
+    val url: String? = null,                  // for image/svg
+    val text: String? = null,                 // for text logo
+    val textStyle: TextStyle? = null,
+    val size: ItemSize? = null,
+    val animation: SplashLogoAnimation? = null
+)
+
+@Serializable
+internal data class SplashLogoAnimation(
+    val type: String,                         // "scale" | "fade" | "rotate" | "slide_up" | "slide_down" | "bounce" | "none"
+    val durationMs: Long? = null,             // animation duration, default 800ms
+    val delayMs: Long? = null,                // delay before animation starts
+    val fromScale: Float? = null,             // for "scale" — initial scale, default 0.5
+    val toScale: Float? = null,               // for "scale" — target scale, default 1.0
+    val fromRotation: Float? = null,          // for "rotate"
+    val toRotation: Float? = null,
+    val easing: String? = null               // "linear" | "ease_in" | "ease_out" | "ease_in_out" | "bounce"
+)

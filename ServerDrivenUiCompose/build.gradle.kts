@@ -86,6 +86,8 @@ dependencies {
     implementation("androidx.window:window:1.3.0")
     implementation(libs.androidx.lifecycle.runtime.compose.v2100)
     implementation(libs.androidx.lifecycle.viewmodel.compose.v2100)
+    compileOnly(libs.lottie.compose)
+    implementation(libs.androidx.datastore.preferences)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

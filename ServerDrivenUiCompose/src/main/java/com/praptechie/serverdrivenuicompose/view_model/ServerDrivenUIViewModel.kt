@@ -18,6 +18,7 @@ internal class ServerDrivenUIViewModel : ViewModel() {
 
     private val json = Json {
         classDiscriminator = "type"
+        ignoreUnknownKeys = true
     }
 
     private val _uiDefinition = MutableStateFlow<UIDefinition?>(null)

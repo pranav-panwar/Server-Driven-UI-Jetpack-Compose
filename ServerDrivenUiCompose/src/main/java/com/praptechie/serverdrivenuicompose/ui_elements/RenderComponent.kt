@@ -21,6 +21,9 @@ import com.praptechie.serverdrivenuicompose.data_models.TextComponent
 import com.praptechie.serverdrivenuicompose.data_models.UIComponent
 import com.praptechie.serverdrivenuicompose.data_models.TextInputComponent
 import com.praptechie.serverdrivenuicompose.data_models.ConditionalComponent
+import com.praptechie.serverdrivenuicompose.data_models.TopAppBarComponent
+import com.praptechie.serverdrivenuicompose.data_models.OnboardingScreenComponent
+import com.praptechie.serverdrivenuicompose.data_models.SplashScreenComponent
 import com.praptechie.serverdrivenuicompose.handler_processors.ServerDrivenState
 import kotlinx.serialization.json.JsonObject
 
@@ -77,6 +80,9 @@ import kotlinx.serialization.json.JsonObject
         is DividerComponent -> RenderDivider(component, dataJson, state, onEvent)
         is TextInputComponent -> RenderTextInput(component, dataJson, state, onEvent)
         is ConditionalComponent -> RenderConditional(component, dataJson, state, onEvent)
+        is TopAppBarComponent -> TopAppBarUi(component, dataJson, state, onEvent)
+        is OnboardingScreenComponent -> OnboardingScreenUi(component, dataJson, state, onEvent)
+        is SplashScreenComponent -> SplashScreenUi(component, dataJson, state, onEvent)
     }
 }
 
